@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Event {
+  id              String              @id @default(cuid())
+  coupleName1     String
+  coupleName2     String
+  displayName     String
+  slug            String              @unique
+  eventDate       DateTime
+  venueName       String
+  venueAddress    String              @default("")
+  description     String              @default("")
+  coverImage      String              @default("")
+  logoImage       String              @default("")
+  status          EventStatus         @default(DRAFT)
+  primaryColor    String              @default("#b58b4b")
+  secondaryColor  String              @default("#d9a6a0")
+  backgroundColor String              @default("#fbf7f0")
+  textColor       String              @default("#221f1c")
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  layouts         EventLayout[]
+  frames          EventFrame[]
+  sessions        PhotoboothSession[]
+}
+
+model Layout {
+  id           String              @id @default(cuid())
+  name         String
+  slug         String              @unique
+  description  String              @default("")
+  photoCount   Int
+  orientation  String
+  canvasWidth  Int
+  canvasHeight Int
+  previewImage String              @default("")
+  configJson   Json
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  frames       Frame[]
+  events       EventLayout[]
+  sessions     PhotoboothSession[]
+}
+
+model Frame {
+  id              String              @id @default(cuid())
+  name            String
+  slug            String              @unique
+  layoutId        String
+  overlayImage    String              @default("")
+  previewImage    String              @default("")
+  backgroundColor String              @default("#ffffff")
+  configJson      Json
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  layout          Layout              @relation(fields: [layoutId], references: [id], onDelete: Restrict)
+  events          EventFrame[]
+  sessions        PhotoboothSession[]
+}
+
+model EventLayout {
+  id        String  @id @default(cuid())
+  eventId   String
+  layoutId  String
+  sortOrder Int     @default(0)
+  isDefault Boolean @default(false)
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  layout    Layout  @relation(fields: [layoutId], references: [id], onDelete: Restrict)
+
+  @@unique([eventId, layoutId])
+}
+
+model EventFrame {
+  id        String  @id @default(cuid())
+  eventId   String
+  frameId   String
+  sortOrder Int     @default(0)
+  isDefault Boolean @default(false)
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  frame     Frame   @relation(fields: [frameId], references: [id], onDelete: Restrict)
+
+  @@unique([eventId, frameId])
+}
+
+model PhotoboothSession {
+  id          String    @id @default(cuid())
+  eventId     String
+  layoutId    String?
+  frameId     String?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  deviceType  String    @default("unknown")
+  userAgent   String    @default("")
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  layout      Layout?   @relation(fields: [layoutId], references: [id], onDelete: SetNull)
+  frame       Frame?    @relation(fields: [frameId], references: [id], onDelete: SetNull)
+}
+
+model PhotoResult {
+  id        String   @id @default(cuid())
+  sessionId String
+  imageUrl  String
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id                 String   @id @default(cuid())
+  saveGeneratedPhoto Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
