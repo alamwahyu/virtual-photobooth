@@ -4,9 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
-import { appPath } from "@/lib/utils/base-path";
+import { appPath, assetPath } from "@/lib/utils/base-path";
 import { slugify } from "@/lib/utils/slug";
-import type { FrameConfig, FrameText, FrameTextType } from "@/types";
+import type { FrameConfig, FrameText, FrameTextType, LayoutConfig } from "@/types";
+
+export type AdminLayoutOption = {
+  id: string;
+  name: string;
+  canvasWidth: number;
+  canvasHeight: number;
+  configJson: unknown;
+};
 
 type LayoutItem = {
   id?: string;
@@ -89,7 +97,7 @@ export function LayoutEditor({ initial }: { initial?: Partial<LayoutItem> }) {
   );
 }
 
-export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>; layouts: { id: string; name: string }[] }) {
+export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>; layouts: AdminLayoutOption[] }) {
   const router = useRouter();
   const [item, setItem] = useState<FrameItem>({
     name: initial?.name || "",
@@ -106,6 +114,7 @@ export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>
   const [error, setError] = useState("");
 
   const frameConfig = normalizeFrameConfig(item.configJson);
+  const selectedLayout = layouts.find((layout) => layout.id === item.layoutId);
 
   function updateText(type: FrameTextType, patch: Partial<FrameText>) {
     const current = normalizeFrameConfig(item.configJson);
@@ -136,41 +145,127 @@ export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-lg bg-white p-5 shadow-soft">
-      <div className="grid gap-3 md:grid-cols-2">
-        <Label>Name<Input value={item.name} onChange={(e) => setItem({ ...item, name: e.target.value })} onBlur={() => !item.slug && setItem({ ...item, slug: slugify(item.name) })} required /></Label>
-        <Label>Slug<Input value={item.slug} onChange={(e) => setItem({ ...item, slug: slugify(e.target.value) })} required /></Label>
-        <Label>Compatible Layout<select className="min-h-11 rounded-md border border-black/15 px-3" value={item.layoutId} onChange={(e) => setItem({ ...item, layoutId: e.target.value })}>{layouts.map((layout) => <option key={layout.id} value={layout.id}>{layout.name}</option>)}</select></Label>
-        <Label>Background Color<Input type="color" value={item.backgroundColor} onChange={(e) => setItem({ ...item, backgroundColor: e.target.value })} /></Label>
-        <UploadUrlField label="Background Image URL" value={item.backgroundImage} kind="frames" onChange={(backgroundImage) => setItem({ ...item, backgroundImage })} />
-        <UploadUrlField label="Overlay PNG/WebP URL" value={item.overlayImage} kind="frames" onChange={(overlayImage) => setItem({ ...item, overlayImage })} />
-        <UploadUrlField label="Preview Image URL" value={item.previewImage} kind="frames" onChange={(previewImage) => setItem({ ...item, previewImage })} />
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.isActive} onChange={(e) => setItem({ ...item, isActive: e.target.checked })} />Active</label>
-      </div>
-      <section className="rounded-md border border-black/10 bg-linen/60 p-4">
-        <h3 className="font-serif text-2xl">Styling Informasi</h3>
-        <p className="mt-1 text-sm text-black/60">Atur posisi dan gaya teks nama pasangan, tanggal, dan tempat pada hasil final.</p>
-        <div className="mt-4 grid gap-4">
-          {(["coupleName", "eventDate", "venue"] as const).map((type) => {
-            const text = frameConfig.texts?.find((entry) => entry.type === type) || defaultText(type);
-            return (
-              <div key={type} className="grid gap-3 rounded-md bg-white p-3 md:grid-cols-6">
-                <div className="font-medium md:col-span-6">{textLabel(type)}</div>
-                <Label>X<Input type="number" value={text.x} onChange={(e) => updateText(type, { x: Number(e.target.value) })} /></Label>
-                <Label>Y<Input type="number" value={text.y} onChange={(e) => updateText(type, { y: Number(e.target.value) })} /></Label>
-                <Label>Font Size<Input type="number" value={text.fontSize} onChange={(e) => updateText(type, { fontSize: Number(e.target.value) })} /></Label>
-                <Label>Color<Input type="color" value={text.color || "#221f1c"} onChange={(e) => updateText(type, { color: e.target.value })} /></Label>
-                <Label>Font<select className="min-h-11 rounded-md border border-black/15 px-3" value={text.font || "sans-serif"} onChange={(e) => updateText(type, { font: e.target.value })}><option value="serif">Serif</option><option value="sans-serif">Sans</option></select></Label>
-                <Label>Align<select className="min-h-11 rounded-md border border-black/15 px-3" value={text.align || "center"} onChange={(e) => updateText(type, { align: e.target.value as CanvasTextAlign })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Label>
-              </div>
-            );
-          })}
+    <form onSubmit={submit} className="rounded-lg border border-black/10 bg-white shadow-soft">
+      <div className="grid gap-0 lg:grid-cols-[310px_1fr]">
+        <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
+          <div className="sticky top-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Live Preview</p>
+            <h3 className="mt-2 font-serif text-2xl">{item.name || "Frame Baru"}</h3>
+            <p className="mt-1 text-sm text-black/55">{selectedLayout?.name || "Pilih layout"}</p>
+            <DynamicFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} className="mt-4" />
+          </div>
+        </aside>
+        <div className="grid gap-5 p-5">
+          <section className="grid gap-3 md:grid-cols-2">
+            <Label>Name<Input value={item.name} onChange={(e) => setItem({ ...item, name: e.target.value })} onBlur={() => !item.slug && setItem({ ...item, slug: slugify(item.name) })} required /></Label>
+            <Label>Slug<Input value={item.slug} onChange={(e) => setItem({ ...item, slug: slugify(e.target.value) })} required /></Label>
+            <Label>Compatible Layout<select className="min-h-11 rounded-md border border-black/15 px-3" value={item.layoutId} onChange={(e) => setItem({ ...item, layoutId: e.target.value })}>{layouts.map((layout) => <option key={layout.id} value={layout.id}>{layout.name}</option>)}</select></Label>
+            <Label>Background Color<Input type="color" value={item.backgroundColor} onChange={(e) => setItem({ ...item, backgroundColor: e.target.value })} /></Label>
+            <UploadUrlField label="Background Image URL" value={item.backgroundImage} kind="frames" onChange={(backgroundImage) => setItem({ ...item, backgroundImage })} />
+            <UploadUrlField label="Overlay PNG/WebP URL" value={item.overlayImage} kind="frames" onChange={(overlayImage) => setItem({ ...item, overlayImage })} />
+            <UploadUrlField label="Preview Image URL" value={item.previewImage} kind="frames" onChange={(previewImage) => setItem({ ...item, previewImage })} />
+            <label className="flex items-center gap-2 self-end rounded-md border border-black/10 bg-linen/50 px-3 py-3 text-sm"><input type="checkbox" checked={item.isActive} onChange={(e) => setItem({ ...item, isActive: e.target.checked })} />Active</label>
+          </section>
+          <section className="rounded-md border border-black/10 bg-linen/60 p-4">
+            <h3 className="font-serif text-2xl">Styling Informasi</h3>
+            <p className="mt-1 text-sm text-black/60">Atur posisi dan gaya teks nama pasangan, tanggal, dan tempat pada hasil final.</p>
+            <div className="mt-4 grid gap-4">
+              {(["coupleName", "eventDate", "venue"] as const).map((type) => {
+                const text = frameConfig.texts?.find((entry) => entry.type === type) || defaultText(type);
+                return (
+                  <div key={type} className="grid gap-3 rounded-md bg-white p-3 md:grid-cols-6">
+                    <div className="font-medium md:col-span-6">{textLabel(type)}</div>
+                    <Label>X<Input type="number" value={text.x} onChange={(e) => updateText(type, { x: Number(e.target.value) })} /></Label>
+                    <Label>Y<Input type="number" value={text.y} onChange={(e) => updateText(type, { y: Number(e.target.value) })} /></Label>
+                    <Label>Font Size<Input type="number" value={text.fontSize} onChange={(e) => updateText(type, { fontSize: Number(e.target.value) })} /></Label>
+                    <Label>Color<Input type="color" value={text.color || "#221f1c"} onChange={(e) => updateText(type, { color: e.target.value })} /></Label>
+                    <Label>Font<select className="min-h-11 rounded-md border border-black/15 px-3" value={text.font || "sans-serif"} onChange={(e) => updateText(type, { font: e.target.value })}><option value="serif">Serif</option><option value="sans-serif">Sans</option></select></Label>
+                    <Label>Align<select className="min-h-11 rounded-md border border-black/15 px-3" value={text.align || "center"} onChange={(e) => updateText(type, { align: e.target.value as CanvasTextAlign })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Label>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+          <details className="rounded-md border border-black/10 bg-white">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Advanced JSON Config</summary>
+            <div className="border-t border-black/10 p-4">
+              <Label>Config JSON<Textarea value={JSON.stringify(item.configJson, null, 2)} onChange={(e) => { try { setItem({ ...item, configJson: JSON.parse(e.target.value) }); } catch { setError("JSON config tidak valid."); } }} /></Label>
+            </div>
+          </details>
+          {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          <div className="flex justify-end">
+            <Button type="submit">Simpan Frame</Button>
+          </div>
         </div>
-      </section>
-      <Label>Config JSON<Textarea value={JSON.stringify(item.configJson, null, 2)} onChange={(e) => { try { setItem({ ...item, configJson: JSON.parse(e.target.value) }); } catch { setError("JSON config tidak valid."); } }} /></Label>
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      <Button type="submit">Simpan Frame</Button>
+      </div>
     </form>
+  );
+}
+
+export function DynamicFramePreview({
+  frame,
+  layout,
+  className = ""
+}: {
+  frame: Partial<FrameItem> & { configJson?: unknown };
+  layout?: AdminLayoutOption;
+  className?: string;
+}) {
+  const config = normalizeFrameConfig(frame.configJson);
+  const layoutConfig = normalizeLayoutConfig(layout?.configJson);
+  const width = layout?.canvasWidth || 1200;
+  const height = layout?.canvasHeight || 1800;
+  const aspectRatio = `${width} / ${height}`;
+
+  return (
+    <div className={`overflow-hidden rounded-lg border border-black/10 bg-white p-3 shadow-sm ${className}`}>
+      <div
+        className="relative mx-auto w-full overflow-hidden rounded-md bg-cover bg-center"
+        style={{
+          aspectRatio,
+          maxHeight: "360px",
+          backgroundColor: frame.backgroundColor || "#ffffff",
+          backgroundImage: frame.backgroundImage ? `url(${assetPath(frame.backgroundImage)})` : undefined
+        }}
+      >
+        {layoutConfig.slots.map((slot, index) => (
+          <div
+            key={`${slot.x}-${slot.y}-${index}`}
+            className="absolute grid place-items-center border border-white/85 bg-black/20 text-[10px] font-semibold uppercase tracking-wide text-white shadow-inner"
+            style={{
+              left: `${(slot.x / width) * 100}%`,
+              top: `${(slot.y / height) * 100}%`,
+              width: `${(slot.width / width) * 100}%`,
+              height: `${(slot.height / height) * 100}%`
+            }}
+          >
+            Foto {index + 1}
+          </div>
+        ))}
+        {frame.overlayImage && <div className="absolute inset-0 bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url(${assetPath(frame.overlayImage)})` }} />}
+        {(config.texts || []).map((text, index) => (
+          <div
+            key={`${text.type}-${index}`}
+            className={text.font === "serif" ? "absolute whitespace-nowrap font-serif" : "absolute whitespace-nowrap font-sans"}
+            style={{
+              left: `${(text.x / width) * 100}%`,
+              top: `${(text.y / height) * 100}%`,
+              color: text.color || "#221f1c",
+              fontSize: `${Math.max(8, (text.fontSize / width) * 260)}px`,
+              transform: text.align === "right" ? "translate(-100%, -50%)" : text.align === "left" ? "translate(0, -50%)" : "translate(-50%, -50%)",
+              textAlign: text.align || "center",
+              textShadow: "0 1px 2px rgba(255,255,255,0.55)"
+            }}
+          >
+            {previewText(text)}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-black/55">
+        <span>{width} x {height}</span>
+        <span className="text-right">{layoutConfig.slots.length} slot</span>
+      </div>
+    </div>
   );
 }
 
@@ -202,6 +297,20 @@ function normalizeFrameConfig(value: unknown): FrameConfig {
     mirrorOutput: config.mirrorOutput ?? true,
     texts: config.texts || [defaultText("coupleName"), defaultText("eventDate"), defaultText("venue")]
   };
+}
+
+function normalizeLayoutConfig(value: unknown): LayoutConfig {
+  if (!value || typeof value !== "object") return { slots: [{ x: 80, y: 80, width: 1040, height: 1200 }] };
+  const config = value as LayoutConfig;
+  if (!Array.isArray(config.slots)) return { slots: [] };
+  return config;
+}
+
+function previewText(text: FrameText) {
+  if (text.type === "coupleName") return "Alam & Ghina";
+  if (text.type === "eventDate") return "30.09.2026";
+  if (text.type === "venue") return "Edelweiss Wedding Hall";
+  return text.value || "Custom Text";
 }
 
 function UploadUrlField({ label, value, kind, onChange }: { label: string; value: string; kind: "events" | "frames" | "layouts" | "uploads"; onChange: (value: string) => void }) {
