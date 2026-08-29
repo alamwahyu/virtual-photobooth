@@ -43,7 +43,7 @@ type FrameItem = {
   isActive: boolean;
 };
 
-export function LayoutEditor({ initial }: { initial?: Partial<LayoutItem> }) {
+export function LayoutEditor({ initial, compact = false }: { initial?: Partial<LayoutItem>; compact?: boolean }) {
   const router = useRouter();
   const [item, setItem] = useState<LayoutItem>({
     name: initial?.name || "",
@@ -103,8 +103,9 @@ export function LayoutEditor({ initial }: { initial?: Partial<LayoutItem> }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-black/10 bg-white shadow-soft">
-      <div className="grid gap-0 lg:grid-cols-[310px_1fr]">
+    <form onSubmit={submit} className={compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}>
+      <div className={compact ? "grid gap-0" : "grid gap-0 lg:grid-cols-[310px_1fr]"}>
+        {!compact && (
         <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
           <div className="sticky top-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Layout Preview</p>
@@ -113,7 +114,18 @@ export function LayoutEditor({ initial }: { initial?: Partial<LayoutItem> }) {
             <DynamicLayoutPreview layout={{ ...item, configJson: layoutConfig }} className="mt-4" />
           </div>
         </aside>
-        <div className="grid gap-5 p-5">
+        )}
+        <div className={compact ? "grid gap-5" : "grid gap-5 p-5"}>
+          {compact && (
+            <div className="grid gap-4 rounded-md border border-black/10 bg-linen/40 p-4 md:grid-cols-[220px_1fr]">
+              <DynamicLayoutPreview layout={{ ...item, configJson: layoutConfig }} />
+              <div className="self-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Preview Layout</p>
+                <h3 className="mt-2 font-serif text-3xl">{item.name || "Layout"}</h3>
+                <p className="mt-1 text-sm text-black/60">{item.canvasWidth} x {item.canvasHeight} · {layoutConfig.slots.length} slot · {item.orientation}</p>
+              </div>
+            </div>
+          )}
           <section>
             <h3 className="font-serif text-2xl">Informasi Layout</h3>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -218,7 +230,7 @@ export function DynamicLayoutPreview({ layout, className = "" }: { layout: Parti
   );
 }
 
-export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>; layouts: AdminLayoutOption[] }) {
+export function FrameEditor({ initial, layouts, compact = false }: { initial?: Partial<FrameItem>; layouts: AdminLayoutOption[]; compact?: boolean }) {
   const router = useRouter();
   const [item, setItem] = useState<FrameItem>({
     name: initial?.name || "",
@@ -266,8 +278,9 @@ export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-black/10 bg-white shadow-soft">
-      <div className="grid gap-0 lg:grid-cols-[310px_1fr]">
+    <form onSubmit={submit} className={compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}>
+      <div className={compact ? "grid gap-0" : "grid gap-0 lg:grid-cols-[310px_1fr]"}>
+        {!compact && (
         <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
           <div className="sticky top-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Live Preview</p>
@@ -276,7 +289,18 @@ export function FrameEditor({ initial, layouts }: { initial?: Partial<FrameItem>
             <DynamicFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} className="mt-4" />
           </div>
         </aside>
-        <div className="grid gap-5 p-5">
+        )}
+        <div className={compact ? "grid gap-5" : "grid gap-5 p-5"}>
+          {compact && (
+            <div className="grid gap-4 rounded-md border border-black/10 bg-linen/40 p-4 md:grid-cols-[220px_1fr]">
+              <DynamicFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} />
+              <div className="self-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Preview Frame</p>
+                <h3 className="mt-2 font-serif text-3xl">{item.name || "Frame"}</h3>
+                <p className="mt-1 text-sm text-black/60">{selectedLayout?.name || "Pilih layout"} · {item.isActive ? "Active" : "Inactive"}</p>
+              </div>
+            </div>
+          )}
           <section className="grid gap-3 md:grid-cols-2">
             <Label>Name<Input value={item.name} onChange={(e) => setItem({ ...item, name: e.target.value })} onBlur={() => !item.slug && setItem({ ...item, slug: slugify(item.name) })} required /></Label>
             <Label>Slug<Input value={item.slug} onChange={(e) => setItem({ ...item, slug: slugify(e.target.value) })} required /></Label>

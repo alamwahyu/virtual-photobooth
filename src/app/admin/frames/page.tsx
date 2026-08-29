@@ -91,7 +91,7 @@ export default async function FramesPage() {
               <details className="border-t border-black/10">
                 <summary className="cursor-pointer bg-linen/40 px-5 py-3 text-sm font-semibold">Edit frame settings</summary>
                 <div className="p-5">
-                  <FrameEditor initial={{ ...frame, configJson: frame.configJson }} layouts={layouts} />
+                  <FrameEditor compact initial={{ ...frame, configJson: frame.configJson }} layouts={layouts} />
                 </div>
               </details>
             </div>

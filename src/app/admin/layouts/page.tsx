@@ -89,7 +89,7 @@ export default async function LayoutsPage() {
               <details className="border-t border-black/10">
                 <summary className="cursor-pointer bg-linen/40 px-5 py-3 text-sm font-semibold">Edit layout settings</summary>
                 <div className="p-5">
-                  <LayoutEditor initial={{ ...layout, configJson: layout.configJson }} />
+                  <LayoutEditor compact initial={{ ...layout, configJson: layout.configJson }} />
                 </div>
               </details>
             </div>
