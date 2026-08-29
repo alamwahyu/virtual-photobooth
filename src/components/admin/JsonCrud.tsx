@@ -59,6 +59,31 @@ export function LayoutEditor({ initial }: { initial?: Partial<LayoutItem> }) {
     id: initial?.id
   });
   const [error, setError] = useState("");
+  const layoutConfig = normalizeLayoutConfig(item.configJson);
+
+  function updateSlot(index: number, patch: Partial<LayoutConfig["slots"][number]>) {
+    const slots = [...layoutConfig.slots];
+    slots[index] = { ...slots[index], ...patch };
+    setItem({ ...item, configJson: { ...layoutConfig, slots } });
+  }
+
+  function addSlot() {
+    const slots = [
+      ...layoutConfig.slots,
+      {
+        x: 80,
+        y: 80 + layoutConfig.slots.length * 260,
+        width: Math.max(240, item.canvasWidth - 160),
+        height: 220
+      }
+    ];
+    setItem({ ...item, photoCount: slots.length, configJson: { ...layoutConfig, slots } });
+  }
+
+  function removeSlot(index: number) {
+    const slots = layoutConfig.slots.filter((_, slotIndex) => slotIndex !== index);
+    setItem({ ...item, photoCount: Math.max(1, slots.length), configJson: { ...layoutConfig, slots } });
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -78,22 +103,118 @@ export function LayoutEditor({ initial }: { initial?: Partial<LayoutItem> }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-lg bg-white p-5 shadow-soft">
-      <div className="grid gap-3 md:grid-cols-2">
-        <Label>Name<Input value={item.name} onChange={(e) => setItem({ ...item, name: e.target.value })} onBlur={() => !item.slug && setItem({ ...item, slug: slugify(item.name) })} required /></Label>
-        <Label>Slug<Input value={item.slug} onChange={(e) => setItem({ ...item, slug: slugify(e.target.value) })} required /></Label>
-        <Label>Photo Count<Input type="number" min={1} value={item.photoCount} onChange={(e) => setItem({ ...item, photoCount: Number(e.target.value) })} /></Label>
-        <Label>Orientation<Input value={item.orientation} onChange={(e) => setItem({ ...item, orientation: e.target.value })} /></Label>
-        <Label>Canvas Width<Input type="number" value={item.canvasWidth} onChange={(e) => setItem({ ...item, canvasWidth: Number(e.target.value) })} /></Label>
-        <Label>Canvas Height<Input type="number" value={item.canvasHeight} onChange={(e) => setItem({ ...item, canvasHeight: Number(e.target.value) })} /></Label>
-        <Label>Preview Image<Input value={item.previewImage} onChange={(e) => setItem({ ...item, previewImage: e.target.value })} /></Label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.isActive} onChange={(e) => setItem({ ...item, isActive: e.target.checked })} />Active</label>
+    <form onSubmit={submit} className="rounded-lg border border-black/10 bg-white shadow-soft">
+      <div className="grid gap-0 lg:grid-cols-[310px_1fr]">
+        <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
+          <div className="sticky top-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Layout Preview</p>
+            <h3 className="mt-2 font-serif text-2xl">{item.name || "Layout Baru"}</h3>
+            <p className="mt-1 text-sm text-black/55">{item.canvasWidth} x {item.canvasHeight} · {layoutConfig.slots.length} slot</p>
+            <DynamicLayoutPreview layout={{ ...item, configJson: layoutConfig }} className="mt-4" />
+          </div>
+        </aside>
+        <div className="grid gap-5 p-5">
+          <section>
+            <h3 className="font-serif text-2xl">Informasi Layout</h3>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <Label>Name<Input value={item.name} onChange={(e) => setItem({ ...item, name: e.target.value })} onBlur={() => !item.slug && setItem({ ...item, slug: slugify(item.name) })} required /></Label>
+              <Label>Slug<Input value={item.slug} onChange={(e) => setItem({ ...item, slug: slugify(e.target.value) })} required /></Label>
+              <Label>Orientation<select className="min-h-11 rounded-md border border-black/15 px-3" value={item.orientation} onChange={(e) => setItem({ ...item, orientation: e.target.value })}><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="square">Square</option></select></Label>
+              <Label>Preview Image<Input value={item.previewImage} onChange={(e) => setItem({ ...item, previewImage: e.target.value })} placeholder="/uploads/layouts/layout.webp" /></Label>
+              <Label>Description<Textarea value={item.description} onChange={(e) => setItem({ ...item, description: e.target.value })} /></Label>
+              <label className="flex items-center gap-2 self-end rounded-md border border-black/10 bg-linen/50 px-3 py-3 text-sm"><input type="checkbox" checked={item.isActive} onChange={(e) => setItem({ ...item, isActive: e.target.checked })} />Active</label>
+            </div>
+          </section>
+
+          <section className="rounded-md border border-black/10 bg-linen/60 p-4">
+            <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+              <div>
+                <h3 className="font-serif text-2xl">Canvas</h3>
+                <p className="text-sm text-black/60">Ukuran hasil akhir dan jumlah pose yang akan dicapture.</p>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-black/55">{item.photoCount} pose</span>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <Label>Canvas Width<Input type="number" min={600} value={item.canvasWidth} onChange={(e) => setItem({ ...item, canvasWidth: Number(e.target.value) })} /></Label>
+              <Label>Canvas Height<Input type="number" min={600} value={item.canvasHeight} onChange={(e) => setItem({ ...item, canvasHeight: Number(e.target.value) })} /></Label>
+              <Label>Photo Count<Input type="number" min={1} value={item.photoCount} onChange={(e) => setItem({ ...item, photoCount: Number(e.target.value) })} /></Label>
+            </div>
+          </section>
+
+          <section className="rounded-md border border-black/10 bg-white">
+            <div className="flex items-center justify-between gap-3 border-b border-black/10 px-4 py-3">
+              <div>
+                <h3 className="font-serif text-2xl">Photo Slots</h3>
+                <p className="text-sm text-black/60">Atur posisi foto pada canvas. Nilai memakai pixel dari ukuran canvas asli.</p>
+              </div>
+              <Button type="button" variant="secondary" onClick={addSlot}>Tambah Slot</Button>
+            </div>
+            <div className="grid gap-3 p-4">
+              {layoutConfig.slots.map((slot, index) => (
+                <div key={`${slot.x}-${slot.y}-${index}`} className="grid gap-3 rounded-md bg-linen/60 p-3 md:grid-cols-[80px_repeat(4,1fr)_auto] md:items-end">
+                  <div className="font-medium">Foto {index + 1}</div>
+                  <Label>X<Input type="number" value={slot.x} onChange={(e) => updateSlot(index, { x: Number(e.target.value) })} /></Label>
+                  <Label>Y<Input type="number" value={slot.y} onChange={(e) => updateSlot(index, { y: Number(e.target.value) })} /></Label>
+                  <Label>Width<Input type="number" min={1} value={slot.width} onChange={(e) => updateSlot(index, { width: Number(e.target.value) })} /></Label>
+                  <Label>Height<Input type="number" min={1} value={slot.height} onChange={(e) => updateSlot(index, { height: Number(e.target.value) })} /></Label>
+                  <Button type="button" variant="secondary" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1}>Hapus</Button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <details className="rounded-md border border-black/10 bg-white">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Advanced JSON Config</summary>
+            <div className="border-t border-black/10 p-4">
+              <Label>Config JSON<Textarea value={JSON.stringify(item.configJson, null, 2)} onChange={(e) => { try { setItem({ ...item, configJson: JSON.parse(e.target.value) }); } catch { setError("JSON config tidak valid."); } }} /></Label>
+            </div>
+          </details>
+          {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          <div className="flex justify-end">
+            <Button type="submit">Simpan Layout</Button>
+          </div>
+        </div>
       </div>
-      <Label>Description<Textarea value={item.description} onChange={(e) => setItem({ ...item, description: e.target.value })} /></Label>
-      <Label>Config JSON<Textarea value={JSON.stringify(item.configJson, null, 2)} onChange={(e) => { try { setItem({ ...item, configJson: JSON.parse(e.target.value) }); } catch { setError("JSON config tidak valid."); } }} /></Label>
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      <Button type="submit">Simpan Layout</Button>
     </form>
+  );
+}
+
+export function DynamicLayoutPreview({ layout, className = "" }: { layout: Partial<LayoutItem> & { configJson?: unknown }; className?: string }) {
+  const width = layout.canvasWidth || 1200;
+  const height = layout.canvasHeight || 1800;
+  const config = normalizeLayoutConfig(layout.configJson);
+
+  return (
+    <div className={`overflow-hidden rounded-lg border border-black/10 bg-white p-3 shadow-sm ${className}`}>
+      <div
+        className="relative mx-auto w-full overflow-hidden rounded-md bg-[#faf6ef]"
+        style={{
+          aspectRatio: `${width} / ${height}`,
+          maxHeight: "360px",
+          backgroundImage: "linear-gradient(45deg, rgba(181,139,75,0.10) 25%, transparent 25%), linear-gradient(-45deg, rgba(181,139,75,0.10) 25%, transparent 25%)",
+          backgroundSize: "18px 18px"
+        }}
+      >
+        {config.slots.map((slot, index) => (
+          <div
+            key={`${slot.x}-${slot.y}-${slot.width}-${slot.height}-${index}`}
+            className="absolute grid place-items-center rounded-sm border border-gold/80 bg-white/85 text-[10px] font-semibold uppercase tracking-wide text-gold shadow-sm"
+            style={{
+              left: `${(slot.x / width) * 100}%`,
+              top: `${(slot.y / height) * 100}%`,
+              width: `${(slot.width / width) * 100}%`,
+              height: `${(slot.height / height) * 100}%`
+            }}
+          >
+            Foto {index + 1}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-black/55">
+        <span>{width} x {height}</span>
+        <span className="text-right">{config.slots.length} slot</span>
+      </div>
+    </div>
   );
 }
 

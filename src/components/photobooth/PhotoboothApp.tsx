@@ -15,7 +15,15 @@ import { usePhotoboothSession } from "@/hooks/usePhotoboothSession";
 import type { BoothState, PublicEvent, PublicFrame, PublicLayout } from "@/types";
 
 function filename(slug: string) {
-  const stamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+  const now = new Date();
+  const stamp = [
+    now.getFullYear(),
+    `${now.getMonth() + 1}`.padStart(2, "0"),
+    `${now.getDate()}`.padStart(2, "0"),
+    `${now.getHours()}`.padStart(2, "0"),
+    `${now.getMinutes()}`.padStart(2, "0"),
+    `${now.getSeconds()}`.padStart(2, "0")
+  ].join("");
   return `photobooth-${slug}-${stamp}.png`;
 }
 
