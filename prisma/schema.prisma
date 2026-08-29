@@ -73,6 +73,7 @@ model Frame {
   overlayImage    String              @default("")
   previewImage    String              @default("")
   backgroundColor String              @default("#ffffff")
+  backgroundImage String              @default("")
   configJson      Json
   isActive        Boolean             @default(true)
   createdAt       DateTime            @default(now())

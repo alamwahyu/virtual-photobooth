@@ -19,7 +19,7 @@ export function FrameSelector({ frames, layoutId, selectedId, onSelect }: { fram
               selectedId === frame.id ? "border-gold ring-2 ring-gold/30" : "border-black/10"
             }`}
           >
-            <div className="mb-4 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-md border border-black/10" style={{ backgroundColor: frame.backgroundColor }}>
+            <div className="mb-4 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-md border border-black/10 bg-cover bg-center" style={{ backgroundColor: frame.backgroundColor, backgroundImage: frame.backgroundImage ? `url(${assetPath(frame.backgroundImage)})` : undefined }}>
               {frame.previewImage ? <img alt="" src={assetPath(frame.previewImage)} className="h-full w-full object-cover" /> : <span className="font-serif text-2xl opacity-70">A & G</span>}
             </div>
             <div className="font-semibold">{frame.name}</div>

@@ -1,0 +1,1 @@
+ALTER TABLE "Frame" ADD COLUMN "backgroundImage" TEXT NOT NULL DEFAULT '';

@@ -58,6 +58,11 @@ export async function composePhotobooth({ event, layout, frame, photos }: Compos
   ctx.fillStyle = frame.backgroundColor || event.backgroundColor || "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  if (frame.backgroundImage) {
+    const background = await loadImage(frame.backgroundImage);
+    drawImageCover(ctx, background, 0, 0, canvas.width, canvas.height);
+  }
+
   for (const [index, slot] of layout.configJson.slots.entries()) {
     const photo = photos[index];
     if (!photo) continue;

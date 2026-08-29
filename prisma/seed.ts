@@ -100,17 +100,17 @@ async function main() {
     prisma.frame.upsert({
       where: { slug: "minimal-white" },
       update: {},
-      create: { name: "Minimal White", slug: "minimal-white", layoutId: photostrip.id, backgroundColor: "#ffffff", configJson: frameTextConfig }
+      create: { name: "Minimal White", slug: "minimal-white", layoutId: photostrip.id, backgroundColor: "#ffffff", backgroundImage: "", configJson: frameTextConfig }
     }),
     prisma.frame.upsert({
       where: { slug: "elegant-wedding" },
       update: {},
-      create: { name: "Elegant Wedding", slug: "elegant-wedding", layoutId: grid.id, backgroundColor: "#fbf7f0", configJson: frameTextConfig }
+      create: { name: "Elegant Wedding", slug: "elegant-wedding", layoutId: grid.id, backgroundColor: "#fbf7f0", backgroundImage: "", configJson: frameTextConfig }
     }),
     prisma.frame.upsert({
       where: { slug: "classic-black" },
       update: {},
-      create: { name: "Classic Black", slug: "classic-black", layoutId: portrait.id, backgroundColor: "#151515", configJson: { ...frameTextConfig, texts: [{ type: "coupleName", x: 600, y: 1540, font: "serif", fontSize: 72, color: "#ffffff", align: "center" }, { type: "eventDate", x: 600, y: 1615, font: "sans-serif", fontSize: 32, color: "#e8dccb", align: "center" }] } }
+      create: { name: "Classic Black", slug: "classic-black", layoutId: portrait.id, backgroundColor: "#151515", backgroundImage: "", configJson: { ...frameTextConfig, texts: [{ type: "coupleName", x: 600, y: 1540, font: "serif", fontSize: 72, color: "#ffffff", align: "center" }, { type: "eventDate", x: 600, y: 1615, font: "sans-serif", fontSize: 32, color: "#e8dccb", align: "center" }] } }
     })
   ]);
 

@@ -47,6 +47,7 @@ export const frameSchema = z.object({
   overlayImage: z.string().optional().default(""),
   previewImage: z.string().optional().default(""),
   backgroundColor: z.string().default("#ffffff"),
+  backgroundImage: z.string().optional().default(""),
   configJson: z.string().min(2),
   isActive: z.boolean().default(true)
 });

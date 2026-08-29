@@ -60,6 +60,7 @@ export type PublicFrame = {
   overlayImage: string;
   previewImage: string;
   backgroundColor: string;
+  backgroundImage: string;
   configJson: FrameConfig;
   isDefault?: boolean;
 };

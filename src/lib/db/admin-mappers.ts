@@ -53,6 +53,7 @@ export async function frameDataFromRequest(request: Request) {
     overlayImage: parsed.overlayImage,
     previewImage: parsed.previewImage,
     backgroundColor: parsed.backgroundColor,
+    backgroundImage: parsed.backgroundImage,
     configJson: JSON.parse(parsed.configJson) as Prisma.InputJsonValue,
     isActive: parsed.isActive
   };

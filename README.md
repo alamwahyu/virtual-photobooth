@@ -12,7 +12,7 @@ https://awhdigital.my.id/virtual-photobooth
 
 - Public event URL per wedding, for example `/virtual-photobooth/event/alam-ghina`
 - Layout selection backed by database `configJson`
-- Frame selection with background color, optional transparent overlay, and dynamic event text
+- Frame selection with background color, optional uploaded background image, transparent overlay, and dynamic event text
 - Camera permission only after user clicks `Mulai Foto`
 - Front/rear camera switching with mirrored front-camera preview
 - Countdown, multi-capture based on `layout.photoCount`, review, retake per pose
@@ -110,4 +110,5 @@ Raw captured photos are not uploaded by default. The final image is composed in 
 - Public assets 404: verify `NEXT_PUBLIC_BASE_PATH=/virtual-photobooth` and Nginx proxy path.
 - Admin cannot login: rerun seed with valid `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
 - Upload fails: verify `UPLOAD_DIR` exists and the Node process can write to it.
+- Uploaded frame image does not appear: verify Nginx serves `/virtual-photobooth/uploads/` from `UPLOAD_DIR`.
 # virtual-photobooth

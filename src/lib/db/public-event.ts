@@ -53,6 +53,7 @@ export async function getPublishedEvent(slug: string): Promise<PublicEvent | nul
         overlayImage: item.frame.overlayImage,
         previewImage: item.frame.previewImage,
         backgroundColor: item.frame.backgroundColor,
+        backgroundImage: item.frame.backgroundImage,
         configJson: item.frame.configJson as never,
         isDefault: item.isDefault
       }))
