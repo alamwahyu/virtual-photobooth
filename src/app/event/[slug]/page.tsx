@@ -18,7 +18,8 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <p className="text-sm font-semibold uppercase tracking-[0.28em]" style={{ color: event.primaryColor }}>
             Virtual Photobooth
           </p>
-          <h1 className="mt-6 font-serif text-6xl leading-none md:text-8xl">{event.displayName}</h1>
+          {event.theme && <p className="mt-6 text-lg font-semibold uppercase tracking-[0.22em]" style={{ color: event.primaryColor }}>{event.theme}</p>}
+          <h1 className="mt-3 font-serif text-6xl leading-none md:text-8xl">{event.displayName}</h1>
           <p className="mt-5 text-2xl">Berpose sebentar. Bawa pulang ceritanya.</p>
           <p className="mt-4 max-w-xl text-lg opacity-70">{event.description || "Pilih format favoritmu, ambil beberapa pose, lalu bawa pulang kenangan dari perayaan ini."}</p>
           <div className="mt-8 grid gap-3 text-base">

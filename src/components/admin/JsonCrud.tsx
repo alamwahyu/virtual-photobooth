@@ -240,7 +240,10 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
     previewImage: initial?.previewImage || "",
     backgroundColor: initial?.backgroundColor || "#ffffff",
     backgroundImage: initial?.backgroundImage || "",
-    configJson: initial?.configJson || { mirrorOutput: true, texts: [{ type: "coupleName", x: 600, y: 1600, font: "serif", fontSize: 64, color: "#221f1c", align: "center" }] },
+    configJson: initial?.configJson || {
+      mirrorOutput: true,
+      texts: [defaultText("eventTheme"), defaultText("coupleName"), defaultText("venue"), defaultText("eventDate"), defaultText("branding")]
+    },
     isActive: initial?.isActive ?? true,
     id: initial?.id
   });
@@ -315,7 +318,7 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
             <h3 className="font-serif text-2xl">Styling Informasi</h3>
             <p className="mt-1 text-sm text-black/60">Atur posisi dan gaya teks nama pasangan, tanggal, dan tempat pada hasil final.</p>
             <div className="mt-4 grid gap-4">
-              {(["coupleName", "eventDate", "venue"] as const).map((type) => {
+              {(["eventTheme", "coupleName", "venue", "eventDate", "branding"] as const).map((type) => {
                 const text = frameConfig.texts?.find((entry) => entry.type === type) || defaultText(type);
                 return (
                   <div key={type} className="grid gap-3 rounded-md bg-white p-3 md:grid-cols-6">
@@ -415,32 +418,47 @@ export function DynamicFramePreview({
 }
 
 function defaultText(type: FrameTextType): FrameText {
-  const y = type === "coupleName" ? 1600 : type === "eventDate" ? 1670 : 1725;
+  const y =
+    type === "eventTheme" ? 1540 :
+    type === "coupleName" ? 1600 :
+    type === "venue" ? 1670 :
+    type === "eventDate" ? 1725 :
+    type === "branding" ? 1770 :
+    1600;
   return {
     type,
     x: 600,
     y,
+    value: type === "branding" ? "AWH Digital" : undefined,
     font: type === "coupleName" ? "serif" : "sans-serif",
-    fontSize: type === "coupleName" ? 64 : 30,
-    color: "#221f1c",
+    fontSize: type === "coupleName" ? 64 : type === "branding" ? 22 : 30,
+    color: type === "eventTheme" || type === "branding" ? "#b58b4b" : "#221f1c",
     align: "center"
   };
 }
 
 function textLabel(type: FrameTextType) {
+  if (type === "eventTheme") return "Tema";
   if (type === "coupleName") return "Nama Pasangan";
-  if (type === "eventDate") return "Tanggal";
   if (type === "venue") return "Tempat";
+  if (type === "eventDate") return "Tanggal";
+  if (type === "branding") return "Branding";
   return "Custom";
 }
 
 function normalizeFrameConfig(value: unknown): FrameConfig {
-  if (!value || typeof value !== "object") return { mirrorOutput: true, texts: [defaultText("coupleName"), defaultText("eventDate"), defaultText("venue")] };
+  const defaults = [defaultText("eventTheme"), defaultText("coupleName"), defaultText("venue"), defaultText("eventDate"), defaultText("branding")];
+  if (!value || typeof value !== "object") return { mirrorOutput: true, texts: defaults };
   const config = value as FrameConfig;
+  const existing = config.texts || [];
+  const texts = [
+    ...defaults.map((text) => existing.find((entry) => entry.type === text.type) || text),
+    ...existing.filter((entry) => !defaults.some((text) => text.type === entry.type))
+  ];
   return {
     ...config,
     mirrorOutput: config.mirrorOutput ?? true,
-    texts: config.texts || [defaultText("coupleName"), defaultText("eventDate"), defaultText("venue")]
+    texts
   };
 }
 
@@ -452,9 +470,11 @@ function normalizeLayoutConfig(value: unknown): LayoutConfig {
 }
 
 function previewText(text: FrameText) {
+  if (text.type === "eventTheme") return "The Wedding of";
   if (text.type === "coupleName") return "Alam & Ghina";
-  if (text.type === "eventDate") return "30.09.2026";
   if (text.type === "venue") return "Edelweiss Wedding Hall";
+  if (text.type === "eventDate") return "30.09.2026";
+  if (text.type === "branding") return text.value || "AWH Digital";
   return text.value || "Custom Text";
 }
 

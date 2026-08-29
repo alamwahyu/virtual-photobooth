@@ -154,7 +154,8 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
         <header className="flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em]" style={{ color: event.primaryColor }}>Photobooth</p>
-            <h1 className="mt-2 font-serif text-5xl">{event.displayName}</h1>
+            {event.theme && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: event.primaryColor }}>{event.theme}</p>}
+            <h1 className="mt-1 font-serif text-5xl">{event.displayName}</h1>
           </div>
           <div className="text-sm opacity-70">{formatEventDate(event.eventDate)} · {event.venueName}</div>
         </header>

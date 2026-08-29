@@ -26,14 +26,16 @@ function drawDecorations(ctx: CanvasRenderingContext2D, frame: PublicFrame) {
 }
 
 function textValue(type: string, event: PublicEvent, fallback?: string) {
+  if (type === "eventTheme") return event.theme || fallback || "The Wedding of";
   if (type === "coupleName") return event.displayName;
   if (type === "eventDate") return compactDate(event.eventDate);
   if (type === "venue") return event.venueName;
+  if (type === "branding") return fallback || "AWH Digital";
   return fallback || "";
 }
 
 function drawText(ctx: CanvasRenderingContext2D, event: PublicEvent, frame: PublicFrame) {
-  for (const text of frame.configJson.texts || []) {
+  for (const text of withDefaultCanvasTexts(frame.configJson.texts, layoutSafeHeight(frame))) {
     const value = textValue(text.type, event, text.value);
     if (!value) continue;
     ctx.save();
@@ -45,6 +47,28 @@ function drawText(ctx: CanvasRenderingContext2D, event: PublicEvent, frame: Publ
     ctx.fillText(value, text.x, text.y);
     ctx.restore();
   }
+}
+
+function layoutSafeHeight(frame: PublicFrame) {
+  const maxY = Math.max(1800, ...(frame.configJson.texts || []).map((text) => text.y));
+  return maxY > 2200 ? 2500 : 1800;
+}
+
+function withDefaultCanvasTexts(texts: PublicFrame["configJson"]["texts"], height: number) {
+  const existing = texts || [];
+  const order = ["eventTheme", "coupleName", "venue", "eventDate", "branding"];
+  const baseY = height >= 2400 ? 2185 : 1490;
+  const defaults = [
+    { type: "eventTheme", x: 600, y: baseY, font: "sans-serif", fontSize: 30, color: "#8d714b", align: "center" as CanvasTextAlign },
+    { type: "coupleName", x: 600, y: baseY + 60, font: "serif", fontSize: 74, color: "#221f1c", align: "center" as CanvasTextAlign },
+    { type: "venue", x: 600, y: baseY + 135, font: "sans-serif", fontSize: 28, color: "#6f665d", align: "center" as CanvasTextAlign },
+    { type: "eventDate", x: 600, y: baseY + 185, font: "sans-serif", fontSize: 30, color: "#6f665d", align: "center" as CanvasTextAlign },
+    { type: "branding", x: 600, y: baseY + 255, font: "sans-serif", fontSize: 22, color: "#b58b4b", align: "center" as CanvasTextAlign }
+  ];
+  return [
+    ...order.map((type) => existing.find((text) => text.type === type) || defaults.find((text) => text.type === type)).filter(Boolean),
+    ...existing.filter((text) => !order.includes(text.type))
+  ] as NonNullable<PublicFrame["configJson"]["texts"]>;
 }
 
 export async function composePhotobooth({ event, layout, frame, photos }: ComposeInput) {

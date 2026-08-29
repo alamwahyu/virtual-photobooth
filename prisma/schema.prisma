@@ -27,6 +27,7 @@ model Event {
   coupleName1     String
   coupleName2     String
   displayName     String
+  theme           String              @default("")
   slug            String              @unique
   eventDate       DateTime
   venueName       String

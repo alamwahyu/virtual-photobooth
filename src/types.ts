@@ -9,7 +9,7 @@ export type LayoutConfig = {
   slots: PhotoSlot[];
 };
 
-export type FrameTextType = "coupleName" | "eventDate" | "venue" | "custom";
+export type FrameTextType = "eventTheme" | "coupleName" | "venue" | "eventDate" | "branding" | "custom";
 
 export type FrameText = {
   type: FrameTextType;
@@ -70,6 +70,7 @@ export type PublicEvent = {
   coupleName1: string;
   coupleName2: string;
   displayName: string;
+  theme: string;
   slug: string;
   eventDate: string;
   venueName: string;

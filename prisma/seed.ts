@@ -27,9 +27,11 @@ const portraitConfig = {
 const frameTextConfig = {
   mirrorOutput: true,
   texts: [
-    { type: "coupleName", x: 600, y: 2240, font: "serif", fontSize: 74, color: "#221f1c", align: "center" },
-    { type: "eventDate", x: 600, y: 2325, font: "sans-serif", fontSize: 34, color: "#6f665d", align: "center" },
-    { type: "venue", x: 600, y: 2380, font: "sans-serif", fontSize: 28, color: "#6f665d", align: "center" }
+    { type: "eventTheme", x: 600, y: 2185, font: "sans-serif", fontSize: 30, color: "#8d714b", align: "center" },
+    { type: "coupleName", x: 600, y: 2245, font: "serif", fontSize: 74, color: "#221f1c", align: "center" },
+    { type: "venue", x: 600, y: 2320, font: "sans-serif", fontSize: 28, color: "#6f665d", align: "center" },
+    { type: "eventDate", x: 600, y: 2370, font: "sans-serif", fontSize: 30, color: "#6f665d", align: "center" },
+    { type: "branding", x: 600, y: 2440, font: "sans-serif", fontSize: 22, color: "#b58b4b", align: "center" }
   ],
   decorations: [{ type: "line", x1: 360, y1: 2185, x2: 840, y2: 2185, color: "#b58b4b", width: 3 }]
 };
@@ -121,6 +123,7 @@ async function main() {
       coupleName1: "Alam",
       coupleName2: "Ghina",
       displayName: "Alam & Ghina",
+      theme: "The Wedding of",
       slug: "alam-ghina",
       eventDate: new Date("2026-09-30T10:00:00.000Z"),
       venueName: "Edelweiss Wedding Hall",

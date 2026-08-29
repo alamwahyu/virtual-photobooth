@@ -8,6 +8,7 @@ export async function eventDataFromRequest(request: Request) {
       coupleName1: parsed.coupleName1,
       coupleName2: parsed.coupleName2,
       displayName: parsed.displayName,
+      theme: parsed.theme,
       slug: parsed.slug,
       eventDate: new Date(parsed.eventDate),
       venueName: parsed.venueName,

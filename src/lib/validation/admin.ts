@@ -9,6 +9,7 @@ export const eventSchema = z.object({
   coupleName1: z.string().min(1),
   coupleName2: z.string().min(1),
   displayName: z.string().min(1),
+  theme: z.string().optional().default(""),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   eventDate: z.string().min(1),
   venueName: z.string().min(1),

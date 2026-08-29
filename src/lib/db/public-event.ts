@@ -17,6 +17,7 @@ export async function getPublishedEvent(slug: string): Promise<PublicEvent | nul
     coupleName1: event.coupleName1,
     coupleName2: event.coupleName2,
     displayName: event.displayName,
+    theme: event.theme,
     slug: event.slug,
     eventDate: event.eventDate.toISOString(),
     venueName: event.venueName,

@@ -14,6 +14,7 @@ type EventFormValue = {
   coupleName1: string;
   coupleName2: string;
   displayName: string;
+  theme: string;
   slug: string;
   eventDate: string;
   venueName: string;
@@ -39,6 +40,7 @@ export function EventForm({ initial, layouts, frames }: { initial?: EventFormVal
       coupleName1: "",
       coupleName2: "",
       displayName: "",
+      theme: "The Wedding of",
       slug: "",
       eventDate: "",
       venueName: "",
@@ -93,6 +95,7 @@ export function EventForm({ initial, layouts, frames }: { initial?: EventFormVal
         <Label>Partner Name 1<Input value={value.coupleName1} onChange={(e) => patch({ coupleName1: e.target.value })} required /></Label>
         <Label>Partner Name 2<Input value={value.coupleName2} onChange={(e) => patch({ coupleName2: e.target.value })} required /></Label>
         <Label>Display Name<Input value={value.displayName} onChange={(e) => patch({ displayName: e.target.value })} onBlur={() => !value.slug && patch({ slug: slugify(value.displayName) })} required /></Label>
+        <Label>Tema<Input value={value.theme} onChange={(e) => patch({ theme: e.target.value })} placeholder="The Wedding of" /></Label>
         <Label>Slug<Input value={value.slug} onChange={(e) => patch({ slug: slugify(e.target.value) })} required /></Label>
         <Label>Wedding Date<Input type="date" value={value.eventDate} onChange={(e) => patch({ eventDate: e.target.value })} required /></Label>
         <Label>Venue Name<Input value={value.venueName} onChange={(e) => patch({ venueName: e.target.value })} required /></Label>
@@ -103,11 +106,55 @@ export function EventForm({ initial, layouts, frames }: { initial?: EventFormVal
         <Label>Status<select className="min-h-11 rounded-md border border-black/15 px-3" value={value.status} onChange={(e) => patch({ status: e.target.value as EventFormValue["status"] })}><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></Label>
       </div>
 
-      <div className="grid gap-4 rounded-lg bg-white p-5 shadow-soft md:grid-cols-4">
-        {(["primaryColor", "secondaryColor", "backgroundColor", "textColor"] as const).map((key) => (
-          <Label key={key}>{key}<Input type="color" value={value[key]} onChange={(e) => patch({ [key]: e.target.value })} /></Label>
-        ))}
-      </div>
+      <section className="rounded-lg bg-white p-5 shadow-soft">
+        <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+          <div>
+            <h2 className="font-serif text-2xl">Event Theme Colors</h2>
+            <p className="text-sm text-black/60">Warna ini mengatur tampilan halaman publik event dan aksen photobooth.</p>
+          </div>
+          <div className="flex overflow-hidden rounded-md border border-black/10">
+            <span className="h-10 w-10" style={{ backgroundColor: value.primaryColor }} />
+            <span className="h-10 w-10" style={{ backgroundColor: value.secondaryColor }} />
+            <span className="h-10 w-10" style={{ backgroundColor: value.backgroundColor }} />
+            <span className="h-10 w-10" style={{ backgroundColor: value.textColor }} />
+          </div>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+          <div className="grid gap-3 md:grid-cols-2">
+            <ColorField
+              label="Primary Color"
+              description="Aksen utama seperti label, highlight, dan detail penting."
+              value={value.primaryColor}
+              onChange={(primaryColor) => patch({ primaryColor })}
+            />
+            <ColorField
+              label="Secondary Color"
+              description="Aksen pendukung untuk variasi visual event."
+              value={value.secondaryColor}
+              onChange={(secondaryColor) => patch({ secondaryColor })}
+            />
+            <ColorField
+              label="Background Color"
+              description="Warna latar halaman public event dan booth."
+              value={value.backgroundColor}
+              onChange={(backgroundColor) => patch({ backgroundColor })}
+            />
+            <ColorField
+              label="Text Color"
+              description="Warna teks utama pada halaman public event."
+              value={value.textColor}
+              onChange={(textColor) => patch({ textColor })}
+            />
+          </div>
+          <div className="rounded-lg border border-black/10 p-4" style={{ backgroundColor: value.backgroundColor, color: value.textColor }}>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: value.primaryColor }}>Virtual Photobooth</p>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: value.primaryColor }}>{value.theme || "The Wedding of"}</p>
+            <h3 className="mt-1 font-serif text-3xl">{value.displayName || "Alam & Ghina"}</h3>
+            <p className="mt-3 text-sm opacity-70">{value.venueName || "Edelweiss Wedding Hall"}</p>
+            <div className="mt-4 h-1.5 w-24 rounded-full" style={{ backgroundColor: value.secondaryColor }} />
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-4 rounded-lg bg-white p-5 shadow-soft md:grid-cols-2">
         <section>
@@ -139,5 +186,18 @@ export function EventForm({ initial, layouts, frames }: { initial?: EventFormVal
       {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <Button type="submit">Simpan Event</Button>
     </form>
+  );
+}
+
+function ColorField({ label, description, value, onChange }: { label: string; description: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="grid gap-2 rounded-md border border-black/10 bg-linen/40 p-3 text-sm">
+      <span className="font-semibold">{label}</span>
+      <span className="text-xs leading-relaxed text-black/55">{description}</span>
+      <div className="flex items-center gap-3">
+        <Input type="color" value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-16 p-1" />
+        <Input value={value} onChange={(event) => onChange(event.target.value)} />
+      </div>
+    </label>
   );
 }
