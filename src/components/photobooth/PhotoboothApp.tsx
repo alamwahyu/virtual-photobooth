@@ -27,6 +27,10 @@ function filename(slug: string) {
   return `photobooth-${slug}-${stamp}.png`;
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function PhotoboothApp({ event }: { event: PublicEvent }) {
   const getInitialLayout = () => {
     const savedLayout = typeof window === "undefined" ? null : sessionStorage.getItem(`awh:${event.slug}:layout`);
@@ -114,12 +118,14 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
     if (!layout || !frame) return;
     try {
       setState("COMPOSING");
+      setError("");
       const canvas = await composePhotobooth({ event, layout, frame, photos });
       const blob = await canvasToBlob(canvas);
       const url = URL.createObjectURL(blob);
       setResultBlob(blob);
       setResultUrl(url);
       await completeSession();
+      await wait(1800);
       setState("RESULT");
     } catch (composeError) {
       setError(composeError instanceof Error ? composeError.message : "Gagal menyusun fotomu.");
@@ -198,10 +204,41 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
           </section>
         )}
 
-        {state === "COMPOSING" && <div className="rounded-lg bg-white p-6 shadow-soft">Menyusun fotomu...</div>}
+        {state === "COMPOSING" && <PrintComposer imageUrl={resultUrl} />}
         {state === "RESULT" && resultUrl && resultBlob && <ResultPreview imageUrl={resultUrl} onDownload={() => downloadBlob(resultBlob, filename(event.slug))} onRestart={restart} onShare={share} />}
         {state === "ERROR" && <div className="rounded-lg bg-white p-6 text-red-700 shadow-soft">{error || cameraError}</div>}
       </div>
     </main>
+  );
+}
+
+function PrintComposer({ imageUrl }: { imageUrl: string }) {
+  return (
+    <section className="mx-auto max-w-xl rounded-lg border border-black/10 bg-white/85 p-6 text-center shadow-soft">
+      <div className="photobooth-printer" aria-hidden="true">
+        <div className="photobooth-printer__body">
+          <div className="photobooth-printer__lights">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="photobooth-printer__slot" />
+        </div>
+        <div key={imageUrl || "loading"} className="photobooth-printer__paper">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="" />
+          ) : (
+            <div className="photobooth-printer__placeholder">
+              <span />
+              <span />
+              <span />
+            </div>
+          )}
+        </div>
+      </div>
+      <p className="mt-6 font-serif text-3xl text-ink">Menyusun fotomu...</p>
+      <p className="mt-2 text-sm text-black/60">Hasil photobooth sedang dicetak.</p>
+    </section>
   );
 }
