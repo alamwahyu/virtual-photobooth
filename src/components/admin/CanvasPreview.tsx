@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { drawImageCover } from "@/lib/canvas/draw-image-cover";
+import { canvasFontFamily } from "@/lib/canvas/font-family";
 import { loadImage } from "@/lib/canvas/load-image";
+import { addSlotPath, drawSlotFrame, normalizedSlotShape, photoRectForSlot } from "@/lib/canvas/slot-shape";
 import type { FrameConfig, FrameText, LayoutConfig } from "@/types";
 
 type LayoutPreviewInput = {
@@ -25,28 +27,37 @@ export function ExactLayoutPreview({ layout, className = "" }: { layout: LayoutP
   const config = normalizeLayoutConfig(layout.configJson);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-    canvas.width = width;
-    canvas.height = height;
-    ctx.fillStyle = "#faf6ef";
-    ctx.fillRect(0, 0, width, height);
-    drawChecker(ctx, width, height);
-    config.slots.forEach((slot, index) => {
-      ctx.save();
-      ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
-      ctx.strokeStyle = "#b58b4b";
-      ctx.lineWidth = Math.max(3, width / 400);
-      ctx.fillRect(slot.x, slot.y, slot.width, slot.height);
-      ctx.strokeRect(slot.x, slot.y, slot.width, slot.height);
-      ctx.fillStyle = "#b58b4b";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = `${Math.max(22, width / 40)}px sans-serif`;
-      ctx.fillText(`Foto ${index + 1}`, slot.x + slot.width / 2, slot.y + slot.height / 2);
-      ctx.restore();
-    });
+    async function render() {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext("2d");
+      if (!canvas || !ctx) return;
+      if (document.fonts) await document.fonts.ready;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.fillStyle = "#faf6ef";
+      ctx.fillRect(0, 0, width, height);
+      drawChecker(ctx, width, height);
+      config.slots.forEach((slot, index) => {
+        ctx.save();
+        drawSlotFrame(ctx, slot, { preview: true });
+        const photoRect = photoRectForSlot(slot);
+        addSlotPath(ctx, slot);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
+        ctx.fill();
+        ctx.strokeStyle = "#b58b4b";
+        ctx.lineWidth = Math.max(3, width / 400);
+        ctx.stroke();
+        ctx.fillStyle = "#b58b4b";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${Math.max(22, width / 40)}px sans-serif`;
+        ctx.fillText(`Foto ${index + 1}`, photoRect.x + photoRect.width / 2, photoRect.y + photoRect.height / 2);
+        ctx.font = `${Math.max(14, width / 70)}px sans-serif`;
+        ctx.fillText(normalizedSlotShape(slot), photoRect.x + photoRect.width / 2, photoRect.y + photoRect.height / 2 + Math.max(32, width / 26));
+        ctx.restore();
+      });
+    }
+    render();
   }, [config, height, width]);
 
   return <PreviewShell width={width} height={height} slots={config.slots.length} className={className} canvasRef={canvasRef} />;
@@ -70,6 +81,7 @@ export function ExactFramePreview({ frame, layout, className = "" }: { frame: Fr
       canvas.width = width;
       canvas.height = height;
       setError("");
+      if (document.fonts) await document.fonts.ready;
 
       ctx.fillStyle = frame.backgroundColor || "#ffffff";
       ctx.fillRect(0, 0, width, height);
@@ -83,16 +95,19 @@ export function ExactFramePreview({ frame, layout, className = "" }: { frame: Fr
 
         layoutConfig.slots.forEach((slot, index) => {
           ctx.save();
+          drawSlotFrame(ctx, slot, { preview: true });
+          const photoRect = photoRectForSlot(slot);
+          addSlotPath(ctx, slot);
           ctx.fillStyle = "rgba(20, 20, 20, 0.24)";
-          ctx.fillRect(slot.x, slot.y, slot.width, slot.height);
+          ctx.fill();
           ctx.strokeStyle = "rgba(255, 255, 255, 0.88)";
           ctx.lineWidth = Math.max(3, width / 420);
-          ctx.strokeRect(slot.x, slot.y, slot.width, slot.height);
+          ctx.stroke();
           ctx.fillStyle = "#ffffff";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.font = `${Math.max(20, width / 48)}px sans-serif`;
-          ctx.fillText(`Foto ${index + 1}`, slot.x + slot.width / 2, slot.y + slot.height / 2);
+          ctx.fillText(`Foto ${index + 1}`, photoRect.x + photoRect.width / 2, photoRect.y + photoRect.height / 2);
           ctx.restore();
         });
 
@@ -163,8 +178,7 @@ function drawPreviewText(ctx: CanvasRenderingContext2D, text: FrameText) {
   ctx.fillStyle = text.color || "#221f1c";
   ctx.textAlign = text.align || "center";
   ctx.textBaseline = "middle";
-  const family = text.font === "serif" ? "Georgia, serif" : "Inter, sans-serif";
-  ctx.font = `${text.fontSize}px ${family}`;
+  ctx.font = `${text.fontSize}px ${canvasFontFamily(text.font)}`;
   ctx.shadowColor = "rgba(255, 255, 255, 0.55)";
   ctx.shadowBlur = 2;
   ctx.fillText(previewText(text), text.x, text.y);

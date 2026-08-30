@@ -6,7 +6,11 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", "Inter", "sans-serif"],
-        serif: ["var(--font-serif)", "Georgia", "serif"]
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        cinzel: ["Cinzel", "Georgia", "serif"],
+        dancing: ["Dancing Script", "cursive"],
+        caveat: ["Caveat", "cursive"],
+        montserrat: ["Montserrat", "Arial", "sans-serif"]
       },
       colors: {
         ink: "#221f1c",

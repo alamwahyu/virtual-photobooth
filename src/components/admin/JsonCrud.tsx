@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
 import { appPath } from "@/lib/utils/base-path";
 import { slugify } from "@/lib/utils/slug";
-import type { FrameConfig, FrameText, FrameTextType, LayoutConfig } from "@/types";
+import type { FrameConfig, FrameText, FrameTextType, LayoutConfig, PhotoSlotShape } from "@/types";
 
 export type AdminLayoutOption = {
   id: string;
@@ -55,7 +55,7 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
     canvasWidth: initial?.canvasWidth || 1200,
     canvasHeight: initial?.canvasHeight || 1800,
     previewImage: initial?.previewImage || "",
-    configJson: initial?.configJson || { slots: [{ x: 80, y: 80, width: 1040, height: 1200 }] },
+    configJson: initial?.configJson || { slots: [{ x: 80, y: 80, width: 1040, height: 1200, shape: "miter" }] },
     isActive: initial?.isActive ?? true,
     id: initial?.id
   });
@@ -96,7 +96,8 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
         x: 80,
         y: 80 + layoutConfig.slots.length * 260,
         width: Math.max(240, item.canvasWidth - 160),
-        height: 220
+        height: 220,
+        shape: "miter" as PhotoSlotShape
       }
     ];
     setItem({ ...item, photoCount: slots.length, configJson: { ...layoutConfig, slots } });
@@ -204,18 +205,19 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
             <div className="flex items-center justify-between gap-3 border-b border-black/10 px-4 py-3">
               <div>
                 <h3 className="font-serif text-2xl">Photo Slots</h3>
-                <p className="text-sm text-black/60">Atur posisi foto pada canvas. Nilai memakai pixel dari ukuran canvas asli.</p>
+                <p className="text-sm text-black/60">Atur posisi foto dan bentuk sudut bingkai. Nilai memakai pixel dari ukuran canvas asli.</p>
               </div>
               <Button type="button" variant="secondary" onClick={addSlot}>Tambah Slot</Button>
             </div>
             <div className="grid gap-3 p-4">
               {layoutConfig.slots.map((slot, index) => (
-                <div key={`${slot.x}-${slot.y}-${index}`} className="grid gap-3 rounded-md bg-linen/60 p-3 md:grid-cols-[80px_repeat(4,1fr)_auto] md:items-end">
+                <div key={`${slot.x}-${slot.y}-${index}`} className="grid gap-3 rounded-md bg-linen/60 p-3 md:grid-cols-[80px_repeat(5,1fr)_auto] md:items-end">
                   <div className="font-medium">Foto {index + 1}</div>
                   <Label>X<Input type="number" value={slot.x} onChange={(e) => updateSlot(index, { x: Number(e.target.value) })} /></Label>
                   <Label>Y<Input type="number" value={slot.y} onChange={(e) => updateSlot(index, { y: Number(e.target.value) })} /></Label>
                   <Label>Width<Input type="number" min={1} value={slot.width} onChange={(e) => updateSlot(index, { width: Number(e.target.value) })} /></Label>
                   <Label>Height<Input type="number" min={1} value={slot.height} onChange={(e) => updateSlot(index, { height: Number(e.target.value) })} /></Label>
+                  <Label>Bentuk<select className="min-h-11 rounded-md border border-black/15 px-3" value={slot.shape || "miter"} onChange={(e) => updateSlot(index, { shape: e.target.value as PhotoSlotShape })}><option value="miter">Kotak / Miter</option><option value="rounded">Oval / Rounded</option><option value="oval">Oval Penuh</option><option value="polaroid">Polaroid</option></select></Label>
                   <Button type="button" variant="secondary" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1}>Hapus</Button>
                 </div>
               ))}
@@ -377,7 +379,7 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
                     <Label>Y<Input disabled={text.enabled === false} type="number" value={text.y} onChange={(e) => updateText(type, { y: Number(e.target.value) })} /></Label>
                     <Label>Font Size<Input disabled={text.enabled === false} type="number" value={text.fontSize} onChange={(e) => updateText(type, { fontSize: Number(e.target.value) })} /></Label>
                     <Label>Color<Input disabled={text.enabled === false} type="color" value={text.color || "#221f1c"} onChange={(e) => updateText(type, { color: e.target.value })} /></Label>
-                    <Label>Font<select disabled={text.enabled === false} className="min-h-11 rounded-md border border-black/15 px-3 disabled:opacity-50" value={text.font || "sans-serif"} onChange={(e) => updateText(type, { font: e.target.value })}><option value="serif">Serif</option><option value="sans-serif">Sans</option></select></Label>
+                    <Label>Font<select disabled={text.enabled === false} className="min-h-11 rounded-md border border-black/15 px-3 disabled:opacity-50" value={normalizeFontValue(text.font)} onChange={(e) => updateText(type, { font: e.target.value })}>{fontOptions.map((font) => <option key={font.value} value={font.value}>{font.label}</option>)}</select></Label>
                     <Label>Align<select disabled={text.enabled === false} className="min-h-11 rounded-md border border-black/15 px-3 disabled:opacity-50" value={text.align || "center"} onChange={(e) => updateText(type, { align: e.target.value as CanvasTextAlign })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Label>
                   </div>
                 );
@@ -426,7 +428,7 @@ function defaultText(type: FrameTextType): FrameText {
     x: 600,
     y,
     value: type === "branding" ? "AWH Digital" : undefined,
-    font: type === "coupleName" ? "serif" : "sans-serif",
+    font: type === "coupleName" ? "dancing" : type === "venue" || type === "branding" ? "montserrat" : "cinzel",
     fontSize: type === "coupleName" ? 64 : type === "branding" ? 22 : 30,
     color: type === "eventTheme" || type === "branding" ? "#b58b4b" : "#221f1c",
     align: "center"
@@ -459,10 +461,23 @@ function normalizeFrameConfig(value: unknown): FrameConfig {
 }
 
 function normalizeLayoutConfig(value: unknown): LayoutConfig {
-  if (!value || typeof value !== "object") return { slots: [{ x: 80, y: 80, width: 1040, height: 1200 }] };
+  if (!value || typeof value !== "object") return { slots: [{ x: 80, y: 80, width: 1040, height: 1200, shape: "miter" }] };
   const config = value as LayoutConfig;
   if (!Array.isArray(config.slots)) return { slots: [] };
-  return config;
+  return { ...config, slots: config.slots.map((slot) => ({ ...slot, shape: slot.shape || "miter" })) };
+}
+
+const fontOptions = [
+  { value: "cinzel", label: "Cinzel" },
+  { value: "dancing", label: "Dancing" },
+  { value: "caveat", label: "Caveat" },
+  { value: "montserrat", label: "Montserrat" }
+];
+
+function normalizeFontValue(font?: string) {
+  if (font === "dancing" || font === "caveat" || font === "montserrat" || font === "cinzel") return font;
+  if (font === "serif") return "cinzel";
+  return "montserrat";
 }
 
 function UploadUrlField({ label, value, kind, onChange }: { label: string; value: string; kind: "events" | "frames" | "layouts" | "uploads"; onChange: (value: string) => void }) {

@@ -7,6 +7,22 @@
   --font-serif: "Cormorant Garamond", Georgia, serif;
 }
 
+.font-cinzel {
+  font-family: "Cinzel", Georgia, serif;
+}
+
+.font-dancing {
+  font-family: "Dancing Script", cursive;
+}
+
+.font-caveat {
+  font-family: "Caveat", cursive;
+}
+
+.font-montserrat {
+  font-family: "Montserrat", Arial, sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }

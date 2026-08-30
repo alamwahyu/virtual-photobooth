@@ -1,5 +1,7 @@
 import { drawImageCover } from "@/lib/canvas/draw-image-cover";
+import { canvasFontFamily } from "@/lib/canvas/font-family";
 import { loadImage } from "@/lib/canvas/load-image";
+import { addSlotPath, drawSlotFrame, photoRectForSlot } from "@/lib/canvas/slot-shape";
 import { compactDate } from "@/lib/utils/format";
 import type { PublicEvent, PublicFrame, PublicLayout } from "@/types";
 
@@ -43,8 +45,7 @@ function drawText(ctx: CanvasRenderingContext2D, event: PublicEvent, frame: Publ
     ctx.fillStyle = text.color || event.textColor;
     ctx.textAlign = text.align || "center";
     ctx.textBaseline = "middle";
-    const family = text.font === "serif" ? "Georgia, serif" : "Inter, sans-serif";
-    ctx.font = `${text.fontSize}px ${family}`;
+    ctx.font = `${text.fontSize}px ${canvasFontFamily(text.font)}`;
     ctx.fillText(value, text.x, text.y);
     ctx.restore();
   }
@@ -60,11 +61,11 @@ function withDefaultCanvasTexts(texts: PublicFrame["configJson"]["texts"], heigh
   const order = ["eventTheme", "coupleName", "venue", "eventDate", "branding"];
   const baseY = height >= 2400 ? 2185 : 1490;
   const defaults = [
-    { type: "eventTheme", enabled: true, x: 600, y: baseY, font: "sans-serif", fontSize: 30, color: "#8d714b", align: "center" as CanvasTextAlign },
-    { type: "coupleName", enabled: true, x: 600, y: baseY + 60, font: "serif", fontSize: 74, color: "#221f1c", align: "center" as CanvasTextAlign },
-    { type: "venue", enabled: true, x: 600, y: baseY + 135, font: "sans-serif", fontSize: 28, color: "#6f665d", align: "center" as CanvasTextAlign },
-    { type: "eventDate", enabled: true, x: 600, y: baseY + 185, font: "sans-serif", fontSize: 30, color: "#6f665d", align: "center" as CanvasTextAlign },
-    { type: "branding", enabled: true, x: 600, y: baseY + 255, font: "sans-serif", fontSize: 22, color: "#b58b4b", align: "center" as CanvasTextAlign }
+    { type: "eventTheme", enabled: true, x: 600, y: baseY, font: "cinzel", fontSize: 30, color: "#8d714b", align: "center" as CanvasTextAlign },
+    { type: "coupleName", enabled: true, x: 600, y: baseY + 60, font: "dancing", fontSize: 74, color: "#221f1c", align: "center" as CanvasTextAlign },
+    { type: "venue", enabled: true, x: 600, y: baseY + 135, font: "montserrat", fontSize: 28, color: "#6f665d", align: "center" as CanvasTextAlign },
+    { type: "eventDate", enabled: true, x: 600, y: baseY + 185, font: "cinzel", fontSize: 30, color: "#6f665d", align: "center" as CanvasTextAlign },
+    { type: "branding", enabled: true, x: 600, y: baseY + 255, font: "montserrat", fontSize: 22, color: "#b58b4b", align: "center" as CanvasTextAlign }
   ];
   return [
     ...order.map((type) => existing.find((text) => text.type === type) || defaults.find((text) => text.type === type)).filter(Boolean),
@@ -92,16 +93,17 @@ export async function composePhotobooth({ event, layout, frame, photos }: Compos
     const photo = photos[index];
     if (!photo) continue;
     const image = await loadImage(photo);
+    drawSlotFrame(ctx, slot);
+    const photoRect = photoRectForSlot(slot);
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(slot.x, slot.y, slot.width, slot.height);
+    addSlotPath(ctx, slot);
     ctx.clip();
     if (frame.configJson.mirrorOutput ?? true) {
-      ctx.translate(slot.x + slot.width, slot.y);
+      ctx.translate(photoRect.x + photoRect.width, photoRect.y);
       ctx.scale(-1, 1);
-      drawImageCover(ctx, image, 0, 0, slot.width, slot.height);
+      drawImageCover(ctx, image, 0, 0, photoRect.width, photoRect.height);
     } else {
-      drawImageCover(ctx, image, slot.x, slot.y, slot.width, slot.height);
+      drawImageCover(ctx, image, photoRect.x, photoRect.y, photoRect.width, photoRect.height);
     }
     ctx.restore();
   }

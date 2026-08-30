@@ -1,8 +1,11 @@
+export type PhotoSlotShape = "miter" | "rounded" | "oval" | "polaroid";
+
 export type PhotoSlot = {
   x: number;
   y: number;
   width: number;
   height: number;
+  shape?: PhotoSlotShape;
 };
 
 export type LayoutConfig = {
@@ -17,7 +20,7 @@ export type FrameText = {
   value?: string;
   x: number;
   y: number;
-  font?: string;
+  font?: "cinzel" | "dancing" | "caveat" | "montserrat" | "serif" | "sans-serif" | string;
   fontSize: number;
   color?: string;
   align?: CanvasTextAlign;
