@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { AlertTriangle, Camera, RefreshCw, X } from "lucide-react";
 import { Countdown } from "@/components/photobooth/Countdown";
 
@@ -10,6 +11,7 @@ export function CameraView({
   videoRef,
   countdown,
   mirrored,
+  guideAspect,
   captureMessage,
   cameraError,
   onCapture,
@@ -24,6 +26,7 @@ export function CameraView({
   videoRef: React.RefObject<HTMLVideoElement | null>;
   countdown: number | null;
   mirrored: boolean;
+  guideAspect: number;
   captureMessage?: string;
   cameraError?: string;
   onCapture: () => void;
@@ -32,6 +35,8 @@ export function CameraView({
   onRetry: () => void;
   disabled?: boolean;
 }) {
+  const safeGuideAspect = Number.isFinite(guideAspect) && guideAspect > 0 ? guideAspect : 3 / 4;
+
   return (
     <div className="photobooth-camera fixed inset-0 z-50 bg-black text-white">
       <video ref={videoRef} playsInline muted className={`photobooth-camera__video ${mirrored ? "-scale-x-100" : ""}`} />
@@ -54,6 +59,16 @@ export function CameraView({
       <div className="photobooth-camera__countdown">
         <Countdown value={countdown} />
       </div>
+
+      {!cameraError && (
+        <div className="photobooth-camera__guide" style={{ "--guide-aspect": safeGuideAspect } as CSSProperties}>
+          <div className="photobooth-camera__guide-corner photobooth-camera__guide-corner--tl" />
+          <div className="photobooth-camera__guide-corner photobooth-camera__guide-corner--tr" />
+          <div className="photobooth-camera__guide-corner photobooth-camera__guide-corner--bl" />
+          <div className="photobooth-camera__guide-corner photobooth-camera__guide-corner--br" />
+          <div className="photobooth-camera__guide-label">Area hasil frame</div>
+        </div>
+      )}
 
       {cameraError && (
         <div className="absolute inset-x-4 top-1/2 z-30 mx-auto max-w-md -translate-y-1/2 rounded-lg border border-white/15 bg-black/70 p-5 text-center shadow-soft backdrop-blur">

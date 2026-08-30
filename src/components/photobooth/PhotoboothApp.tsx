@@ -8,6 +8,7 @@ import { LayoutSelector } from "@/components/photobooth/LayoutSelector";
 import { PhotoPreview } from "@/components/photobooth/PhotoPreview";
 import { ResultPreview } from "@/components/photobooth/ResultPreview";
 import { canvasToBlob, composePhotobooth, downloadBlob } from "@/lib/canvas/compose-photobooth";
+import { photoRectForSlot } from "@/lib/canvas/slot-shape";
 import { formatEventDate } from "@/lib/utils/format";
 import { useCamera } from "@/hooks/useCamera";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -40,6 +41,13 @@ function captureSuccessMessage(pose: number, total: number) {
     "Mantap. Satu lagi kenangan tersimpan."
   ];
   return messages[(pose - 1) % messages.length];
+}
+
+function guideAspectForPose(layout: PublicLayout | undefined, pose: number) {
+  const slot = layout?.configJson.slots[Math.max(0, Math.min(pose - 1, layout.configJson.slots.length - 1))];
+  if (!slot) return 3 / 4;
+  const photoRect = photoRectForSlot(slot);
+  return photoRect.width / photoRect.height;
 }
 
 export function PhotoboothApp({ event }: { event: PublicEvent }) {
@@ -227,6 +235,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
             videoRef={videoRef}
             countdown={countdown.value}
             mirrored={currentFacingMode === "user"}
+            guideAspect={guideAspectForPose(layout, pose)}
             captureMessage={captureMessage}
             cameraError={cameraError}
             onCapture={runCapture}

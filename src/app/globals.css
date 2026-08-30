@@ -95,7 +95,8 @@ select {
 .photobooth-camera__progress,
 .photobooth-camera__action,
 .photobooth-camera__countdown,
-.photobooth-camera__toast {
+.photobooth-camera__toast,
+.photobooth-camera__guide {
   position: absolute;
   z-index: 2;
 }
@@ -111,6 +112,97 @@ select {
   display: grid;
   place-items: center;
   pointer-events: none;
+}
+
+.photobooth-camera__guide {
+  top: 50%;
+  left: 50%;
+  width: min(86vw, calc((100dvh - 275px) * var(--guide-aspect)), 520px);
+  aspect-ratio: var(--guide-aspect);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.photobooth-camera__guide::before,
+.photobooth-camera__guide::after {
+  position: absolute;
+  left: 50%;
+  background: rgba(255, 255, 255, 0.44);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.photobooth-camera__guide::before {
+  top: 33.333%;
+  width: 100%;
+  height: 1px;
+}
+
+.photobooth-camera__guide::after {
+  top: 66.666%;
+  width: 100%;
+  height: 1px;
+}
+
+.photobooth-camera__guide-corner {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-color: #ffffff;
+}
+
+.photobooth-camera__guide-corner--tl {
+  top: -2px;
+  left: -2px;
+  border-top: 4px solid;
+  border-left: 4px solid;
+  border-top-left-radius: 14px;
+}
+
+.photobooth-camera__guide-corner--tr {
+  top: -2px;
+  right: -2px;
+  border-top: 4px solid;
+  border-right: 4px solid;
+  border-top-right-radius: 14px;
+}
+
+.photobooth-camera__guide-corner--bl {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 4px solid;
+  border-left: 4px solid;
+  border-bottom-left-radius: 14px;
+}
+
+.photobooth-camera__guide-corner--br {
+  right: -2px;
+  bottom: -2px;
+  border-right: 4px solid;
+  border-bottom: 4px solid;
+  border-bottom-right-radius: 14px;
+}
+
+.photobooth-camera__guide-label {
+  position: absolute;
+  left: 50%;
+  bottom: -42px;
+  width: max-content;
+  max-width: 82vw;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.48);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
 }
 
 .photobooth-camera__progress {
@@ -176,6 +268,10 @@ select {
   .photobooth-camera__capture {
     width: 68px;
     height: 68px;
+  }
+
+  .photobooth-camera__guide {
+    width: min(64vw, calc((100dvh - 96px) * var(--guide-aspect)), 720px);
   }
 
   .photobooth-camera__toast {
