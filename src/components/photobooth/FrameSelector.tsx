@@ -7,8 +7,7 @@ export function FrameSelector({ frames, layoutId, selectedId, onSelect }: { fram
   const compatible = frames.filter((frame) => !layoutId || frame.layoutId === layoutId);
   if (!compatible.length) return <p className="rounded-md bg-white/70 p-4 text-sm">Tidak ada bingkai yang tersedia.</p>;
   return (
-    <section className="space-y-3 sm:space-y-4">
-      <h2 className="font-serif text-2xl sm:text-3xl">Pilih bingkai</h2>
+    <section>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {compatible.map((frame) => (
           <button

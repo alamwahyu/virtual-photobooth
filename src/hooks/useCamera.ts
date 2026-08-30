@@ -4,6 +4,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type FacingMode = "user" | "environment";
 
+function cameraAccessMessage(error: unknown) {
+  if (typeof window !== "undefined" && !window.isSecureContext) {
+    return "Kamera hanya bisa dibuka melalui HTTPS atau localhost. Silakan buka link photobooth dari domain HTTPS.";
+  }
+
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError" || error.name === "SecurityError") {
+      return "Izin kamera ditolak. Aktifkan permission Camera untuk situs ini di pengaturan browser, lalu coba lagi.";
+    }
+    if (error.name === "NotFoundError" || error.name === "OverconstrainedError") {
+      return "Kamera tidak ditemukan di perangkat ini, atau kamera yang diminta tidak tersedia.";
+    }
+    if (error.name === "NotReadableError" || error.name === "AbortError") {
+      return "Kamera sedang tidak bisa dipakai. Tutup aplikasi lain yang memakai kamera, lalu coba lagi.";
+    }
+  }
+
+  return "Kamera tidak dapat diakses. Pastikan izin kamera sudah diberikan pada browser.";
+}
+
 export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -20,9 +40,9 @@ export function useCamera() {
   const startCamera = useCallback(
     async (facingMode: FacingMode = currentFacingMode) => {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setCameraError("Browser ini tidak mendukung akses kamera.");
+        setCameraError("Browser ini tidak mendukung akses kamera, atau halaman tidak dibuka melalui HTTPS.");
         setCameraPermission("denied");
-        return;
+        return false;
       }
 
       try {
@@ -43,9 +63,11 @@ export function useCamera() {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
         }
-      } catch {
+        return true;
+      } catch (error) {
         setCameraPermission("denied");
-        setCameraError("Kamera tidak dapat diakses. Pastikan izin kamera sudah diberikan pada browser.");
+        setCameraError(cameraAccessMessage(error));
+        return false;
       }
     },
     [currentFacingMode, stopCamera]

@@ -94,6 +94,7 @@ export type BoothState =
   | "IDLE"
   | "SELECTING_LAYOUT"
   | "SELECTING_FRAME"
+  | "READY_TO_START"
   | "CAMERA_READY"
   | "COUNTDOWN"
   | "CAPTURING"

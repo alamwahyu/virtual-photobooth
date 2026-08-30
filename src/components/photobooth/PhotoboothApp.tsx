@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Camera } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 import { CameraView } from "@/components/photobooth/CameraView";
 import { FrameSelector } from "@/components/photobooth/FrameSelector";
 import { LayoutSelector } from "@/components/photobooth/LayoutSelector";
@@ -31,6 +31,17 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function captureSuccessMessage(pose: number, total: number) {
+  if (pose >= total) return "Pose terakhir tersimpan. Siap melihat hasilmu.";
+  const messages = [
+    "Pose tersimpan. Lanjut gaya berikutnya.",
+    "Cakep. Ambil pose berikutnya.",
+    "Foto masuk. Siapkan ekspresi selanjutnya.",
+    "Mantap. Satu lagi kenangan tersimpan."
+  ];
+  return messages[(pose - 1) % messages.length];
+}
+
 export function PhotoboothApp({ event }: { event: PublicEvent }) {
   const getInitialLayout = () => {
     const savedLayout = typeof window === "undefined" ? null : sessionStorage.getItem(`awh:${event.slug}:layout`);
@@ -52,6 +63,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
   const [retakeIndex, setRetakeIndex] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [captureMessage, setCaptureMessage] = useState("");
   const { videoRef, startCamera, stopCamera, switchCamera, capturePhoto, cameraError, currentFacingMode } = useCamera();
   const countdown = useCountdown(3);
   const { startSession, completeSession } = usePhotoboothSession(event.id);
@@ -68,11 +80,13 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
   function chooseFrame(item: PublicFrame) {
     setFrame(item);
     sessionStorage.setItem(`awh:${event.slug}:frame`, item.id);
+    setState("READY_TO_START");
   }
 
   async function beginCamera() {
     if (!layout || !frame) return;
     setError("");
+    setCaptureMessage("");
     setState("CAMERA_READY");
     await startSession(layout.id, frame.id);
     await startCamera("user");
@@ -89,6 +103,9 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
         const updated = [...photos];
         updated[retakeIndex] = nextPhoto;
         setPhotos(updated);
+        setCaptureMessage("Pose berhasil diganti.");
+        await wait(850);
+        setCaptureMessage("");
         setRetakeIndex(null);
         stopCamera();
         setState("REVIEW");
@@ -96,6 +113,9 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
       }
       const updated = [...photos, nextPhoto];
       setPhotos(updated);
+      setCaptureMessage(captureSuccessMessage(updated.length, layout.photoCount));
+      await wait(850);
+      setCaptureMessage("");
       if (updated.length >= layout.photoCount) {
         stopCamera();
         setState("REVIEW");
@@ -110,7 +130,13 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
 
   async function retake(index: number) {
     setRetakeIndex(index);
+    setCaptureMessage("");
     setState("CAMERA_READY");
+    await startCamera(currentFacingMode);
+  }
+
+  async function retryCamera() {
+    setCaptureMessage("");
     await startCamera(currentFacingMode);
   }
 
@@ -149,6 +175,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
     setResultUrl("");
     setResultBlob(null);
     setRetakeIndex(null);
+    setCaptureMessage("");
     setState("SELECTING_LAYOUT");
   }
 
@@ -166,19 +193,30 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
           <div className="text-sm leading-relaxed opacity-70 md:text-right">{formatEventDate(event.eventDate)} · {event.venueName}</div>
         </header>
 
-        {(state === "SELECTING_LAYOUT" || state === "SELECTING_FRAME") && (
-          <div className="space-y-8 sm:space-y-10">
+        {state === "SELECTING_LAYOUT" && (
+          <div className="space-y-5">
+            <StepHeader step={1} title="Pilih tata letak" description="Tentukan jumlah dan susunan pose yang ingin dipakai." />
             <LayoutSelector layouts={event.layouts} selectedId={layout?.id} onSelect={chooseLayout} />
-            {layout && <FrameSelector frames={event.frames} layoutId={layout.id} selectedId={frame?.id} onSelect={chooseFrame} />}
-            <div className="rounded-lg border border-black/10 bg-white/70 p-4 shadow-soft sm:p-5">
-              <p className="text-sm text-black/65">Foto diproses langsung di perangkatmu. Kamera hanya digunakan selama sesi photobooth berlangsung.</p>
-              <button type="button" disabled={!layout || !frame} onClick={beginCamera} className="mt-4 touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white disabled:opacity-50 sm:w-auto">
-                <Camera className="mr-2 inline" size={19} />
-                Mulai Foto
-              </button>
-              {cameraError && <p className="mt-3 text-sm text-red-700">{cameraError}</p>}
-            </div>
           </div>
+        )}
+
+        {state === "SELECTING_FRAME" && layout && (
+          <div className="space-y-5">
+            <StepHeader step={2} title="Pilih bingkai" description={`${layout.name} · ${layout.photoCount} pose`} onBack={() => setState("SELECTING_LAYOUT")} />
+            <FrameSelector frames={event.frames} layoutId={layout.id} selectedId={frame?.id} onSelect={chooseFrame} />
+          </div>
+        )}
+
+        {state === "READY_TO_START" && layout && frame && (
+          <section className="mx-auto max-w-xl space-y-5 rounded-lg border border-black/10 bg-white/75 p-5 text-center shadow-soft sm:p-6">
+            <StepHeader step={3} title="Siap mulai foto" description={`${layout.name} · ${frame.name}`} onBack={() => setState("SELECTING_FRAME")} centered />
+            <p className="text-sm leading-relaxed text-black/65">Foto diproses langsung di perangkatmu. Kamera hanya digunakan selama sesi photobooth berlangsung.</p>
+            <button type="button" onClick={beginCamera} className="touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white">
+              <Camera className="mr-2 inline" size={19} />
+              Mulai Foto
+            </button>
+            {cameraError && <p className="text-sm text-red-700">{cameraError}</p>}
+          </section>
         )}
 
         {(state === "CAMERA_READY" || state === "COUNTDOWN" || state === "CAPTURING") && layout && (
@@ -189,9 +227,12 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
             videoRef={videoRef}
             countdown={countdown.value}
             mirrored={currentFacingMode === "user"}
+            captureMessage={captureMessage}
+            cameraError={cameraError}
             onCapture={runCapture}
             onFlip={switchCamera}
-            onCancel={() => { stopCamera(); setState("SELECTING_FRAME"); }}
+            onCancel={() => { stopCamera(); setState("READY_TO_START"); }}
+            onRetry={retryCamera}
             disabled={state === "COUNTDOWN" || state === "CAPTURING"}
           />
         )}
@@ -209,6 +250,35 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
         {state === "ERROR" && <div className="rounded-lg bg-white p-6 text-red-700 shadow-soft">{error || cameraError}</div>}
       </div>
     </main>
+  );
+}
+
+function StepHeader({
+  step,
+  title,
+  description,
+  onBack,
+  centered = false
+}: {
+  step: number;
+  title: string;
+  description: string;
+  onBack?: () => void;
+  centered?: boolean;
+}) {
+  return (
+    <div className={`flex gap-3 ${centered ? "flex-col items-center" : "items-start justify-between"}`}>
+      <div className={centered ? "text-center" : "min-w-0"}>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step {step} dari 3</p>
+        <h2 className="mt-1 break-words font-serif text-3xl leading-tight sm:text-4xl">{title}</h2>
+        <p className="mt-1 text-sm text-black/60">{description}</p>
+      </div>
+      {onBack && (
+        <button type="button" onClick={onBack} aria-label="Kembali" className="touch-target shrink-0 rounded-full border border-black/10 bg-white/80 p-3 shadow-sm">
+          <ArrowLeft size={20} />
+        </button>
+      )}
+    </div>
   );
 }
 
