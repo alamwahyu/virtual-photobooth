@@ -234,7 +234,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
       <div className="mx-auto max-w-6xl space-y-7 sm:space-y-10">
         <header className="flex flex-col justify-between gap-3 border-b border-black/10 pb-5 md:flex-row md:items-end md:gap-4 md:pb-6">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:tracking-[0.24em]" style={{ color: event.primaryColor }}>Photobooth</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:tracking-[0.24em]" style={{ color: event.primaryColor }}>AWH Virtual Photobooth</p>
             {event.theme && <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]" style={{ color: event.primaryColor }}>{event.theme}</p>}
             <h1 className="mt-1 break-words font-serif text-4xl leading-none sm:text-5xl">{event.displayName}</h1>
           </div>
@@ -301,6 +301,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
       <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(event) => chooseGalleryPhotos(event.target.files)} />
       {showCameraIntro && (
         <CameraIntroModal
+          photoCount={layout?.photoCount || 1}
           onContinue={beginCamera}
           onChooseGallery={() => galleryInputRef.current?.click()}
           onCancel={() => setShowCameraIntro(false)}
@@ -311,10 +312,12 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
 }
 
 function CameraIntroModal({
+  photoCount,
   onContinue,
   onChooseGallery,
   onCancel
 }: {
+  photoCount: number;
   onContinue: () => void;
   onChooseGallery: () => void;
   onCancel: () => void;
@@ -323,10 +326,11 @@ function CameraIntroModal({
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/50 px-4 py-6 backdrop-blur-sm">
       <section role="dialog" aria-modal="true" aria-labelledby="camera-intro-title" className="w-full max-w-md rounded-lg bg-white p-5 text-ink shadow-soft sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Sebelum kamera menyala</p>
-        <h2 id="camera-intro-title" className="mt-2 font-serif text-4xl leading-tight">Satu izin kecil, lalu sesi fotomu siap dimulai.</h2>
+        <h2 id="camera-intro-title" className="mt-2 font-serif text-2xl leading-tight sm:text-3xl">Satu izin kecil, lalu sesi fotomu siap dimulai.</h2>
         <div className="mt-5 space-y-3 text-sm leading-relaxed text-black/68">
           <p>1. Kamera hanya aktif selama sesi ini. Foto diproses dan tetap di perangkatmu.</p>
           <p>2. Setelah menekan tombol, pilih izinkan pada popup dari browser.</p>
+          <p>3. Jika memakai galeri, pilih {photoCount} foto sesuai jumlah pose pada tata letak ini.</p>
         </div>
         <div className="mt-6 grid gap-3">
           <button type="button" onClick={onContinue} className="touch-target rounded-md bg-ink px-5 font-semibold text-white">

@@ -15,9 +15,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   return (
     <main className="min-h-screen overflow-x-hidden" style={{ backgroundColor: event.backgroundColor, color: event.textColor }}>
       <section className="mx-auto grid min-h-screen max-w-6xl content-center gap-7 px-4 py-6 sm:px-5 sm:py-10 md:grid-cols-[1.1fr_0.9fr] md:items-center md:gap-10">
-        <div className="min-w-0">
+        <div className="order-2 min-w-0 md:order-1">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:tracking-[0.28em]" style={{ color: event.primaryColor }}>
-            Virtual Photobooth
+            AWH Virtual Photobooth
           </p>
           {event.theme && <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] sm:mt-6 sm:text-lg sm:tracking-[0.22em]" style={{ color: event.primaryColor }}>{event.theme}</p>}
           <h1 className="mt-3 break-words font-serif text-5xl leading-none sm:text-6xl md:text-8xl">{event.displayName}</h1>
@@ -34,10 +34,10 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             </div>
           </div>
           <Link href={`/event/${event.slug}/booth`} className="mt-7 inline-flex touch-target w-full items-center justify-center rounded-md bg-ink px-6 py-3 font-semibold text-white shadow-soft sm:mt-9 sm:w-auto">
-            Masuk Photobooth
+            Masuk AWH Virtual Photobooth
           </Link>
         </div>
-        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-lg border border-black/10 bg-white/60 shadow-soft md:max-w-none">
+        <div className="order-1 mx-auto w-full max-w-sm overflow-hidden rounded-lg border border-black/10 bg-white/60 shadow-soft md:order-2 md:max-w-none">
           {event.coverImage ? (
             <div className="relative aspect-[4/5] sm:aspect-[3/4]">
               <img src={assetPath(event.coverImage)} alt={event.displayName} className="h-full w-full object-cover" />

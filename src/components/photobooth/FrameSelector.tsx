@@ -22,7 +22,6 @@ export function FrameSelector({ frames, layoutId, selectedId, onSelect }: { fram
               {frame.previewImage ? <img alt="" src={assetPath(frame.previewImage)} className="h-full w-full object-cover" /> : <span className="font-serif text-xl opacity-70 sm:text-2xl">A & G</span>}
             </div>
             <div className="break-words text-sm font-semibold sm:text-base">{frame.name}</div>
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-black/60 sm:text-sm">Dynamic text, transparent overlay ready.</p>
           </button>
         ))}
       </div>
