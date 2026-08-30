@@ -263,7 +263,7 @@ select {
   border-radius: 999px;
   background: #b58b4b;
   box-shadow: 0 0 0 4px rgba(181, 139, 75, 0.16);
-  animation: printer-light 1.2s ease-in-out infinite;
+  animation: printer-light 1.45s ease-in-out infinite;
 }
 
 .photobooth-printer__lights span:nth-child(2) {
@@ -298,7 +298,7 @@ select {
   background: #f8f8f6;
   box-shadow: 0 22px 34px rgba(34, 31, 28, 0.18);
   transform-origin: top center;
-  animation: printer-paper 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: printer-paper 3.35s cubic-bezier(0.2, 0.82, 0.24, 1) both;
 }
 
 .photobooth-printer__paper::after {
@@ -307,7 +307,7 @@ select {
   background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.62) 48%, transparent 78%);
   content: "";
   transform: translateX(-120%);
-  animation: printer-shine 1.4s ease-in-out 0.45s both;
+  animation: printer-shine 2.2s ease-in-out 1.2s both;
 }
 
 .photobooth-printer__paper img {
@@ -333,7 +333,7 @@ select {
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(181, 139, 75, 0.12), rgba(181, 139, 75, 0.32), rgba(181, 139, 75, 0.12));
   background-size: 180% 100%;
-  animation: printer-loading 1.1s linear infinite;
+  animation: printer-loading 1.65s linear infinite;
 }
 
 .photobooth-printer__placeholder span:nth-child(2) {
@@ -348,10 +348,18 @@ select {
   0% {
     max-height: 0;
     opacity: 0;
-    transform: translateY(-96px) scaleY(0.1);
+    transform: translateY(-116px) scaleY(0.08);
   }
-  32% {
+  14% {
     opacity: 1;
+  }
+  38% {
+    max-height: 90px;
+    transform: translateY(-70px) scaleY(0.42);
+  }
+  72% {
+    max-height: 240px;
+    transform: translateY(-18px) scaleY(0.86);
   }
   100% {
     max-height: 330px;

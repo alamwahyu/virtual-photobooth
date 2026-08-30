@@ -151,7 +151,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
       setResultBlob(blob);
       setResultUrl(url);
       await completeSession();
-      await wait(1800);
+      await wait(4200);
       setState("RESULT");
     } catch (composeError) {
       setError(composeError instanceof Error ? composeError.message : "Gagal menyusun fotomu.");
@@ -308,7 +308,7 @@ function PrintComposer({ imageUrl }: { imageUrl: string }) {
         </div>
       </div>
       <p className="mt-6 font-serif text-3xl text-ink">Menyusun fotomu...</p>
-      <p className="mt-2 text-sm text-black/60">Hasil photobooth sedang dicetak.</p>
+      <p className="mt-2 text-sm text-black/60">Hasil photobooth sedang diproses dan dicetak pelan-pelan.</p>
     </section>
   );
 }

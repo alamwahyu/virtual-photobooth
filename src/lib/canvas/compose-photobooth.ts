@@ -1,4 +1,4 @@
-import { drawImageCover } from "@/lib/canvas/draw-image-cover";
+import { drawImageContain, drawImageCover } from "@/lib/canvas/draw-image-cover";
 import { canvasFontFamily } from "@/lib/canvas/font-family";
 import { loadImage } from "@/lib/canvas/load-image";
 import { addSlotPath, drawSlotFrame, photoRectForSlot } from "@/lib/canvas/slot-shape";
@@ -101,9 +101,9 @@ export async function composePhotobooth({ event, layout, frame, photos }: Compos
     if (frame.configJson.mirrorOutput ?? true) {
       ctx.translate(photoRect.x + photoRect.width, photoRect.y);
       ctx.scale(-1, 1);
-      drawImageCover(ctx, image, 0, 0, photoRect.width, photoRect.height);
+      drawImageContain(ctx, image, 0, 0, photoRect.width, photoRect.height);
     } else {
-      drawImageCover(ctx, image, photoRect.x, photoRect.y, photoRect.width, photoRect.height);
+      drawImageContain(ctx, image, photoRect.x, photoRect.y, photoRect.width, photoRect.height);
     }
     ctx.restore();
   }
