@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Camera } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Camera, ImagePlus } from "lucide-react";
 import { CameraView } from "@/components/photobooth/CameraView";
 import { FrameSelector } from "@/components/photobooth/FrameSelector";
 import { LayoutSelector } from "@/components/photobooth/LayoutSelector";
@@ -50,6 +50,15 @@ function guideAspectForPose(layout: PublicLayout | undefined, pose: number) {
   return photoRect.width / photoRect.height;
 }
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => (typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("File foto tidak valid.")));
+    reader.onerror = () => reject(new Error("Gagal membaca foto dari galeri."));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function PhotoboothApp({ event }: { event: PublicEvent }) {
   const getInitialLayout = () => {
     const savedLayout = typeof window === "undefined" ? null : sessionStorage.getItem(`awh:${event.slug}:layout`);
@@ -72,6 +81,8 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
   const [retakeIndex, setRetakeIndex] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [captureMessage, setCaptureMessage] = useState("");
+  const [showCameraIntro, setShowCameraIntro] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const { videoRef, startCamera, stopCamera, switchCamera, capturePhoto, cameraError, currentFacingMode } = useCamera();
   const countdown = useCountdown(3);
   const { startSession, completeSession } = usePhotoboothSession(event.id);
@@ -91,10 +102,16 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
     setState("READY_TO_START");
   }
 
-  async function beginCamera() {
+  function openCameraIntro() {
     if (!layout || !frame) return;
     setError("");
     setCaptureMessage("");
+    setShowCameraIntro(true);
+  }
+
+  async function beginCamera() {
+    if (!layout || !frame) return;
+    setShowCameraIntro(false);
     setState("CAMERA_READY");
     await startSession(layout.id, frame.id);
     await startCamera("user");
@@ -148,6 +165,28 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
     await startCamera(currentFacingMode);
   }
 
+  async function chooseGalleryPhotos(files: FileList | null) {
+    if (!layout || !files?.length) return;
+    try {
+      setError("");
+      setShowCameraIntro(false);
+      const selected = Array.from(files).slice(0, layout.photoCount);
+      const selectedPhotos = await Promise.all(selected.map(fileToDataUrl));
+      setPhotos(selectedPhotos);
+      setRetakeIndex(null);
+      setCaptureMessage("");
+      setState(selectedPhotos.length >= layout.photoCount ? "REVIEW" : "READY_TO_START");
+      if (selectedPhotos.length < layout.photoCount) {
+        setError(`Pilih ${layout.photoCount} foto. Saat ini baru ${selectedPhotos.length} foto terpilih.`);
+      }
+    } catch (galleryError) {
+      setError(galleryError instanceof Error ? galleryError.message : "Gagal membaca foto dari galeri.");
+      setState("READY_TO_START");
+    } finally {
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    }
+  }
+
   async function compose() {
     if (!layout || !frame) return;
     try {
@@ -184,6 +223,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
     setResultBlob(null);
     setRetakeIndex(null);
     setCaptureMessage("");
+    setShowCameraIntro(false);
     setState("SELECTING_LAYOUT");
   }
 
@@ -219,7 +259,7 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
           <section className="mx-auto max-w-xl space-y-5 rounded-lg border border-black/10 bg-white/75 p-5 text-center shadow-soft sm:p-6">
             <StepHeader step={3} title="Siap mulai foto" description={`${layout.name} · ${frame.name}`} onBack={() => setState("SELECTING_FRAME")} centered />
             <p className="text-sm leading-relaxed text-black/65">Foto diproses langsung di perangkatmu. Kamera hanya digunakan selama sesi photobooth berlangsung.</p>
-            <button type="button" onClick={beginCamera} className="touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white">
+            <button type="button" onClick={openCameraIntro} className="touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white">
               <Camera className="mr-2 inline" size={19} />
               Mulai Foto
             </button>
@@ -258,7 +298,51 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
         {state === "RESULT" && resultUrl && resultBlob && <ResultPreview imageUrl={resultUrl} onDownload={() => downloadBlob(resultBlob, filename(event.slug))} onRestart={restart} onShare={share} />}
         {state === "ERROR" && <div className="rounded-lg bg-white p-6 text-red-700 shadow-soft">{error || cameraError}</div>}
       </div>
+      <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(event) => chooseGalleryPhotos(event.target.files)} />
+      {showCameraIntro && (
+        <CameraIntroModal
+          onContinue={beginCamera}
+          onChooseGallery={() => galleryInputRef.current?.click()}
+          onCancel={() => setShowCameraIntro(false)}
+        />
+      )}
     </main>
+  );
+}
+
+function CameraIntroModal({
+  onContinue,
+  onChooseGallery,
+  onCancel
+}: {
+  onContinue: () => void;
+  onChooseGallery: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/50 px-4 py-6 backdrop-blur-sm">
+      <section role="dialog" aria-modal="true" aria-labelledby="camera-intro-title" className="w-full max-w-md rounded-lg bg-white p-5 text-ink shadow-soft sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Sebelum kamera menyala</p>
+        <h2 id="camera-intro-title" className="mt-2 font-serif text-4xl leading-tight">Satu izin kecil, lalu sesi fotomu siap dimulai.</h2>
+        <div className="mt-5 space-y-3 text-sm leading-relaxed text-black/68">
+          <p>1. Kamera hanya aktif selama sesi ini. Foto diproses dan tetap di perangkatmu.</p>
+          <p>2. Setelah menekan tombol, pilih izinkan pada popup dari browser.</p>
+        </div>
+        <div className="mt-6 grid gap-3">
+          <button type="button" onClick={onContinue} className="touch-target rounded-md bg-ink px-5 font-semibold text-white">
+            <Camera className="mr-2 inline" size={18} />
+            Lanjutkan ke Kamera
+          </button>
+          <button type="button" onClick={onChooseGallery} className="touch-target rounded-md border border-black/15 bg-white px-5 font-semibold text-ink">
+            <ImagePlus className="mr-2 inline" size={18} />
+            Pilih Foto dari Galeri
+          </button>
+          <button type="button" onClick={onCancel} className="touch-target rounded-md px-5 font-semibold text-black/60">
+            Nanti Saja
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
