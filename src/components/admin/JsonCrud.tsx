@@ -59,8 +59,29 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
     isActive: initial?.isActive ?? true,
     id: initial?.id
   });
+  const [createFrame, setCreateFrame] = useState(false);
+  const [draftFrame, setDraftFrame] = useState<Omit<FrameItem, "layoutId">>({
+    name: "",
+    slug: "",
+    overlayImage: "",
+    previewImage: "",
+    backgroundColor: "#ffffff",
+    backgroundImage: "",
+    configJson: {
+      mirrorOutput: true,
+      texts: [defaultText("eventTheme"), defaultText("coupleName"), defaultText("venue"), defaultText("eventDate"), defaultText("branding")]
+    },
+    isActive: true
+  });
   const [error, setError] = useState("");
   const layoutConfig = normalizeLayoutConfig(item.configJson);
+  const draftLayoutOption: AdminLayoutOption = {
+    id: item.id || "new-layout",
+    name: item.name || "Layout Baru",
+    canvasWidth: item.canvasWidth,
+    canvasHeight: item.canvasHeight,
+    configJson: layoutConfig
+  };
 
   function updateSlot(index: number, patch: Partial<LayoutConfig["slots"][number]>) {
     const slots = [...layoutConfig.slots];
@@ -89,6 +110,11 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
+    if (!item.id && createFrame && (!draftFrame.name || !draftFrame.slug)) {
+      setError("Nama dan slug frame wajib diisi jika opsi tambah frame aktif.");
+      return;
+    }
+
     const response = await fetch(appPath(item.id ? `/api/admin/layouts/${item.id}` : "/api/admin/layouts"), {
       method: item.id ? "PATCH" : "POST",
       headers: { "content-type": "application/json" },
@@ -99,6 +125,26 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
       setError(data.error);
       return;
     }
+
+    const savedLayout = (await response.json()) as { id: string };
+    if (!item.id && createFrame) {
+      const frameResponse = await fetch(appPath("/api/admin/frames"), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...draftFrame,
+          layoutId: savedLayout.id,
+          configJson: JSON.stringify(draftFrame.configJson)
+        })
+      });
+      if (!frameResponse.ok) {
+        const data = await frameResponse.json().catch(() => ({ error: "Layout tersimpan, tetapi frame gagal dibuat." }));
+        setError(`Layout tersimpan, tetapi frame gagal dibuat: ${data.error}`);
+        router.refresh();
+        return;
+      }
+    }
+
     router.refresh();
     if (!item.id) setItem({ ...item, name: "", slug: "" });
   }
@@ -175,6 +221,35 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
               ))}
             </div>
           </section>
+
+          {!item.id && (
+            <section className="rounded-md border border-black/10 bg-white">
+              <div className="flex flex-col justify-between gap-3 border-b border-black/10 px-4 py-3 md:flex-row md:items-center">
+                <div>
+                  <h3 className="font-serif text-2xl">Frame Opsional</h3>
+                  <p className="text-sm text-black/60">Buat frame pertama untuk layout ini dalam sekali submit.</p>
+                </div>
+                <label className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-linen px-3 py-2 text-xs font-semibold">
+                  <input type="checkbox" checked={createFrame} onChange={(event) => setCreateFrame(event.target.checked)} />
+                  {createFrame ? "On" : "Off"}
+                </label>
+              </div>
+              {createFrame && (
+                <div className="grid gap-4 p-4 lg:grid-cols-[240px_1fr]">
+                  <ExactFramePreview frame={draftFrame} layout={draftLayoutOption} />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Label>Frame Name<Input value={draftFrame.name} onChange={(event) => setDraftFrame({ ...draftFrame, name: event.target.value })} onBlur={() => !draftFrame.slug && setDraftFrame({ ...draftFrame, slug: slugify(draftFrame.name) })} required={createFrame} /></Label>
+                    <Label>Frame Slug<Input value={draftFrame.slug} onChange={(event) => setDraftFrame({ ...draftFrame, slug: slugify(event.target.value) })} required={createFrame} /></Label>
+                    <Label>Background Color<Input type="color" value={draftFrame.backgroundColor} onChange={(event) => setDraftFrame({ ...draftFrame, backgroundColor: event.target.value })} /></Label>
+                    <label className="flex items-center gap-2 self-end rounded-md border border-black/10 bg-linen/50 px-3 py-3 text-sm"><input type="checkbox" checked={draftFrame.isActive} onChange={(event) => setDraftFrame({ ...draftFrame, isActive: event.target.checked })} />Active</label>
+                    <UploadUrlField label="Background Image URL" value={draftFrame.backgroundImage} kind="frames" onChange={(backgroundImage) => setDraftFrame({ ...draftFrame, backgroundImage })} />
+                    <UploadUrlField label="Overlay PNG/WebP URL" value={draftFrame.overlayImage} kind="frames" onChange={(overlayImage) => setDraftFrame({ ...draftFrame, overlayImage })} />
+                    <UploadUrlField label="Preview Image URL" value={draftFrame.previewImage} kind="frames" onChange={(previewImage) => setDraftFrame({ ...draftFrame, previewImage })} />
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           <details className="rounded-md border border-black/10 bg-white">
             <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Advanced JSON Config</summary>
