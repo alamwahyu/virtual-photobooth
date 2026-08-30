@@ -54,60 +54,128 @@ select {
 }
 
 .photobooth-camera {
+  position: fixed;
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.photobooth-camera__video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photobooth-camera__shade-top,
+.photobooth-camera__shade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.photobooth-camera__shade-top {
+  top: 0;
+  height: 156px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+}
+
+.photobooth-camera__shade-bottom {
+  bottom: 0;
+  height: 220px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0));
 }
 
 .photobooth-camera__top,
 .photobooth-camera__progress,
-.photobooth-camera__action {
-  position: relative;
+.photobooth-camera__action,
+.photobooth-camera__countdown {
+  position: absolute;
   z-index: 2;
-  flex-shrink: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
 }
 
-.photobooth-camera__progress,
+.photobooth-camera__top {
+  top: max(12px, env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+}
+
+.photobooth-camera__countdown {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.photobooth-camera__progress {
+  left: 0;
+  right: 0;
+  bottom: calc(104px + env(safe-area-inset-bottom));
+}
+
 .photobooth-camera__action {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+  left: 0;
+  right: 0;
+  bottom: max(22px, env(safe-area-inset-bottom));
 }
 
-.photobooth-camera__viewport {
-  min-height: 0;
-  background: #050505;
+.photobooth-camera__capture {
+  display: inline-grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  border: 5px solid rgba(255, 255, 255, 0.38);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
 }
 
-.photobooth-camera__video {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  object-fit: cover;
-}
-
-@media (orientation: portrait) {
-  .photobooth-camera__viewport {
-    min-height: calc(100dvh - 188px);
-  }
-
-  .photobooth-camera__video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+.photobooth-camera__capture:active {
+  transform: scale(0.96);
 }
 
 @media (orientation: landscape) {
-  .photobooth-camera__viewport {
-    padding: 0 16px;
+  .photobooth-camera__top {
+    top: max(10px, env(safe-area-inset-top));
   }
 
-  .photobooth-camera__video {
+  .photobooth-camera__progress {
+    bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .photobooth-camera__action {
+    right: max(22px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    left: auto;
     width: auto;
-    max-width: 100%;
-    height: min(100%, calc(100dvh - 164px));
-    border-radius: 8px;
-    object-fit: cover;
+  }
+
+  .photobooth-camera__capture {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+@media (max-width: 480px) {
+  .photobooth-printer {
+    min-height: 330px;
+  }
+
+  .photobooth-printer__body {
+    height: 120px;
+  }
+
+  .photobooth-printer__paper {
+    width: min(220px, 74%);
+    min-height: 220px;
+  }
+
+  .photobooth-printer__paper img,
+  .photobooth-printer__placeholder {
+    min-height: 220px;
   }
 }
 

@@ -155,24 +155,24 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
   const pose = retakeIndex !== null ? retakeIndex + 1 : photos.length + 1;
 
   return (
-    <main className="min-h-screen px-5 py-8" style={{ backgroundColor: event.backgroundColor, color: event.textColor }}>
-      <div className="mx-auto max-w-6xl space-y-10">
-        <header className="flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em]" style={{ color: event.primaryColor }}>Photobooth</p>
-            {event.theme && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: event.primaryColor }}>{event.theme}</p>}
-            <h1 className="mt-1 font-serif text-5xl">{event.displayName}</h1>
+    <main className="min-h-screen overflow-x-hidden px-4 py-5 sm:px-5 sm:py-8" style={{ backgroundColor: event.backgroundColor, color: event.textColor }}>
+      <div className="mx-auto max-w-6xl space-y-7 sm:space-y-10">
+        <header className="flex flex-col justify-between gap-3 border-b border-black/10 pb-5 md:flex-row md:items-end md:gap-4 md:pb-6">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:tracking-[0.24em]" style={{ color: event.primaryColor }}>Photobooth</p>
+            {event.theme && <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em]" style={{ color: event.primaryColor }}>{event.theme}</p>}
+            <h1 className="mt-1 break-words font-serif text-4xl leading-none sm:text-5xl">{event.displayName}</h1>
           </div>
-          <div className="text-sm opacity-70">{formatEventDate(event.eventDate)} · {event.venueName}</div>
+          <div className="text-sm leading-relaxed opacity-70 md:text-right">{formatEventDate(event.eventDate)} · {event.venueName}</div>
         </header>
 
         {(state === "SELECTING_LAYOUT" || state === "SELECTING_FRAME") && (
-          <div className="space-y-10">
+          <div className="space-y-8 sm:space-y-10">
             <LayoutSelector layouts={event.layouts} selectedId={layout?.id} onSelect={chooseLayout} />
             {layout && <FrameSelector frames={event.frames} layoutId={layout.id} selectedId={frame?.id} onSelect={chooseFrame} />}
-            <div className="rounded-lg border border-black/10 bg-white/70 p-5 shadow-soft">
+            <div className="rounded-lg border border-black/10 bg-white/70 p-4 shadow-soft sm:p-5">
               <p className="text-sm text-black/65">Foto diproses langsung di perangkatmu. Kamera hanya digunakan selama sesi photobooth berlangsung.</p>
-              <button type="button" disabled={!layout || !frame} onClick={beginCamera} className="mt-4 touch-target rounded-md bg-ink px-6 py-3 font-semibold text-white disabled:opacity-50">
+              <button type="button" disabled={!layout || !frame} onClick={beginCamera} className="mt-4 touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white disabled:opacity-50 sm:w-auto">
                 <Camera className="mr-2 inline" size={19} />
                 Mulai Foto
               </button>
@@ -198,9 +198,9 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
 
         {state === "REVIEW" && (
           <section className="space-y-5">
-            <h2 className="font-serif text-4xl">Review pose</h2>
+            <h2 className="font-serif text-3xl sm:text-4xl">Review pose</h2>
             <PhotoPreview photos={photos} retaking={retakeIndex !== null} onRetake={retake} />
-            <button type="button" onClick={compose} className="touch-target rounded-md bg-ink px-6 py-3 font-semibold text-white">Gunakan Foto Ini</button>
+            <button type="button" onClick={compose} className="touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white sm:w-auto">Gunakan Foto Ini</button>
           </section>
         )}
 
