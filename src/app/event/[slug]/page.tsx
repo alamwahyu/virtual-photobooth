@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, MapPin } from "lucide-react";
 import { getPublishedEvent } from "@/lib/db/public-event";
+import { assetPath } from "@/lib/utils/base-path";
 import { formatEventDate } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -36,17 +37,29 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             Masuk Photobooth
           </Link>
         </div>
-        <div className="rounded-lg border border-black/10 bg-white/60 p-5 shadow-soft">
-          <div className="aspect-[3/4] rounded-md border border-dashed border-gold/50 bg-white p-6">
-            <div className="flex h-full flex-col justify-between">
-              <div className="grid flex-1 gap-3">
-                <div className="rounded bg-linen" />
-                <div className="rounded bg-linen" />
-                <div className="rounded bg-linen" />
+        <div className="overflow-hidden rounded-lg border border-black/10 bg-white/60 shadow-soft">
+          {event.coverImage ? (
+            <div className="relative aspect-[3/4]">
+              <img src={assetPath(event.coverImage)} alt={event.displayName} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+                {event.logoImage && <img src={assetPath(event.logoImage)} alt="" className="mb-4 h-14 w-14 rounded-full border border-white/40 object-cover" />}
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">{event.theme || "The Wedding of"}</p>
+                <div className="mt-1 font-serif text-4xl">{event.displayName}</div>
               </div>
-              <div className="pt-6 text-center font-serif text-3xl">{event.displayName}</div>
             </div>
-          </div>
+          ) : (
+            <div className="aspect-[3/4] p-5">
+              <div className="flex h-full flex-col justify-between rounded-md border border-dashed border-gold/50 bg-white p-6">
+                <div className="grid flex-1 gap-3">
+                  <div className="rounded bg-linen" />
+                  <div className="rounded bg-linen" />
+                  <div className="rounded bg-linen" />
+                </div>
+                <div className="pt-6 text-center font-serif text-3xl">{event.displayName}</div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </main>

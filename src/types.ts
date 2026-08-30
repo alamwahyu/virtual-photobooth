@@ -13,6 +13,7 @@ export type FrameTextType = "eventTheme" | "coupleName" | "venue" | "eventDate" 
 
 export type FrameText = {
   type: FrameTextType;
+  enabled?: boolean;
   value?: string;
   x: number;
   y: number;

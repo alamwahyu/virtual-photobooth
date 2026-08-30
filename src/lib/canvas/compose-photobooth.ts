@@ -36,6 +36,7 @@ function textValue(type: string, event: PublicEvent, fallback?: string) {
 
 function drawText(ctx: CanvasRenderingContext2D, event: PublicEvent, frame: PublicFrame) {
   for (const text of withDefaultCanvasTexts(frame.configJson.texts, layoutSafeHeight(frame))) {
+    if (text.enabled === false) continue;
     const value = textValue(text.type, event, text.value);
     if (!value) continue;
     ctx.save();
@@ -59,11 +60,11 @@ function withDefaultCanvasTexts(texts: PublicFrame["configJson"]["texts"], heigh
   const order = ["eventTheme", "coupleName", "venue", "eventDate", "branding"];
   const baseY = height >= 2400 ? 2185 : 1490;
   const defaults = [
-    { type: "eventTheme", x: 600, y: baseY, font: "sans-serif", fontSize: 30, color: "#8d714b", align: "center" as CanvasTextAlign },
-    { type: "coupleName", x: 600, y: baseY + 60, font: "serif", fontSize: 74, color: "#221f1c", align: "center" as CanvasTextAlign },
-    { type: "venue", x: 600, y: baseY + 135, font: "sans-serif", fontSize: 28, color: "#6f665d", align: "center" as CanvasTextAlign },
-    { type: "eventDate", x: 600, y: baseY + 185, font: "sans-serif", fontSize: 30, color: "#6f665d", align: "center" as CanvasTextAlign },
-    { type: "branding", x: 600, y: baseY + 255, font: "sans-serif", fontSize: 22, color: "#b58b4b", align: "center" as CanvasTextAlign }
+    { type: "eventTheme", enabled: true, x: 600, y: baseY, font: "sans-serif", fontSize: 30, color: "#8d714b", align: "center" as CanvasTextAlign },
+    { type: "coupleName", enabled: true, x: 600, y: baseY + 60, font: "serif", fontSize: 74, color: "#221f1c", align: "center" as CanvasTextAlign },
+    { type: "venue", enabled: true, x: 600, y: baseY + 135, font: "sans-serif", fontSize: 28, color: "#6f665d", align: "center" as CanvasTextAlign },
+    { type: "eventDate", enabled: true, x: 600, y: baseY + 185, font: "sans-serif", fontSize: 30, color: "#6f665d", align: "center" as CanvasTextAlign },
+    { type: "branding", enabled: true, x: 600, y: baseY + 255, font: "sans-serif", fontSize: 22, color: "#b58b4b", align: "center" as CanvasTextAlign }
   ];
   return [
     ...order.map((type) => existing.find((text) => text.type === type) || defaults.find((text) => text.type === type)).filter(Boolean),

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ExactFramePreview, ExactLayoutPreview } from "@/components/admin/CanvasPreview";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
-import { appPath, assetPath } from "@/lib/utils/base-path";
+import { appPath } from "@/lib/utils/base-path";
 import { slugify } from "@/lib/utils/slug";
 import type { FrameConfig, FrameText, FrameTextType, LayoutConfig } from "@/types";
 
@@ -111,14 +112,14 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Layout Preview</p>
             <h3 className="mt-2 font-serif text-2xl">{item.name || "Layout Baru"}</h3>
             <p className="mt-1 text-sm text-black/55">{item.canvasWidth} x {item.canvasHeight} · {layoutConfig.slots.length} slot</p>
-            <DynamicLayoutPreview layout={{ ...item, configJson: layoutConfig }} className="mt-4" />
+            <ExactLayoutPreview layout={{ ...item, configJson: layoutConfig }} className="mt-4" />
           </div>
         </aside>
         )}
         <div className={compact ? "grid gap-5" : "grid gap-5 p-5"}>
           {compact && (
             <div className="grid gap-4 rounded-md border border-black/10 bg-linen/40 p-4 md:grid-cols-[220px_1fr]">
-              <DynamicLayoutPreview layout={{ ...item, configJson: layoutConfig }} />
+              <ExactLayoutPreview layout={{ ...item, configJson: layoutConfig }} />
               <div className="self-center">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Preview Layout</p>
                 <h3 className="mt-2 font-serif text-3xl">{item.name || "Layout"}</h3>
@@ -192,42 +193,7 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
 }
 
 export function DynamicLayoutPreview({ layout, className = "" }: { layout: Partial<LayoutItem> & { configJson?: unknown }; className?: string }) {
-  const width = layout.canvasWidth || 1200;
-  const height = layout.canvasHeight || 1800;
-  const config = normalizeLayoutConfig(layout.configJson);
-
-  return (
-    <div className={`overflow-hidden rounded-lg border border-black/10 bg-white p-3 shadow-sm ${className}`}>
-      <div
-        className="relative mx-auto w-full overflow-hidden rounded-md bg-[#faf6ef]"
-        style={{
-          aspectRatio: `${width} / ${height}`,
-          maxHeight: "360px",
-          backgroundImage: "linear-gradient(45deg, rgba(181,139,75,0.10) 25%, transparent 25%), linear-gradient(-45deg, rgba(181,139,75,0.10) 25%, transparent 25%)",
-          backgroundSize: "18px 18px"
-        }}
-      >
-        {config.slots.map((slot, index) => (
-          <div
-            key={`${slot.x}-${slot.y}-${slot.width}-${slot.height}-${index}`}
-            className="absolute grid place-items-center rounded-sm border border-gold/80 bg-white/85 text-[10px] font-semibold uppercase tracking-wide text-gold shadow-sm"
-            style={{
-              left: `${(slot.x / width) * 100}%`,
-              top: `${(slot.y / height) * 100}%`,
-              width: `${(slot.width / width) * 100}%`,
-              height: `${(slot.height / height) * 100}%`
-            }}
-          >
-            Foto {index + 1}
-          </div>
-        ))}
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-black/55">
-        <span>{width} x {height}</span>
-        <span className="text-right">{config.slots.length} slot</span>
-      </div>
-    </div>
-  );
+  return <ExactLayoutPreview layout={layout} className={className} />;
 }
 
 export function FrameEditor({ initial, layouts, compact = false }: { initial?: Partial<FrameItem>; layouts: AdminLayoutOption[]; compact?: boolean }) {
@@ -289,14 +255,14 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Live Preview</p>
             <h3 className="mt-2 font-serif text-2xl">{item.name || "Frame Baru"}</h3>
             <p className="mt-1 text-sm text-black/55">{selectedLayout?.name || "Pilih layout"}</p>
-            <DynamicFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} className="mt-4" />
+            <ExactFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} className="mt-4" />
           </div>
         </aside>
         )}
         <div className={compact ? "grid gap-5" : "grid gap-5 p-5"}>
           {compact && (
             <div className="grid gap-4 rounded-md border border-black/10 bg-linen/40 p-4 md:grid-cols-[220px_1fr]">
-              <DynamicFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} />
+              <ExactFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} />
               <div className="self-center">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Preview Frame</p>
                 <h3 className="mt-2 font-serif text-3xl">{item.name || "Frame"}</h3>
@@ -321,14 +287,23 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
               {(["eventTheme", "coupleName", "venue", "eventDate", "branding"] as const).map((type) => {
                 const text = frameConfig.texts?.find((entry) => entry.type === type) || defaultText(type);
                 return (
-                  <div key={type} className="grid gap-3 rounded-md bg-white p-3 md:grid-cols-6">
-                    <div className="font-medium md:col-span-6">{textLabel(type)}</div>
-                    <Label>X<Input type="number" value={text.x} onChange={(e) => updateText(type, { x: Number(e.target.value) })} /></Label>
-                    <Label>Y<Input type="number" value={text.y} onChange={(e) => updateText(type, { y: Number(e.target.value) })} /></Label>
-                    <Label>Font Size<Input type="number" value={text.fontSize} onChange={(e) => updateText(type, { fontSize: Number(e.target.value) })} /></Label>
-                    <Label>Color<Input type="color" value={text.color || "#221f1c"} onChange={(e) => updateText(type, { color: e.target.value })} /></Label>
-                    <Label>Font<select className="min-h-11 rounded-md border border-black/15 px-3" value={text.font || "sans-serif"} onChange={(e) => updateText(type, { font: e.target.value })}><option value="serif">Serif</option><option value="sans-serif">Sans</option></select></Label>
-                    <Label>Align<select className="min-h-11 rounded-md border border-black/15 px-3" value={text.align || "center"} onChange={(e) => updateText(type, { align: e.target.value as CanvasTextAlign })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Label>
+                  <div key={type} className={`grid gap-3 rounded-md bg-white p-3 transition md:grid-cols-6 ${text.enabled === false ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between gap-3 md:col-span-6">
+                      <div>
+                        <div className="font-medium">{textLabel(type)}</div>
+                        <div className="text-xs text-black/50">{text.enabled === false ? "Tidak ditampilkan di hasil final" : "Ditampilkan di hasil final"}</div>
+                      </div>
+                      <label className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-linen px-3 py-2 text-xs font-semibold">
+                        <input type="checkbox" checked={text.enabled !== false} onChange={(e) => updateText(type, { enabled: e.target.checked })} />
+                        {text.enabled === false ? "Off" : "On"}
+                      </label>
+                    </div>
+                    <Label>X<Input disabled={text.enabled === false} type="number" value={text.x} onChange={(e) => updateText(type, { x: Number(e.target.value) })} /></Label>
+                    <Label>Y<Input disabled={text.enabled === false} type="number" value={text.y} onChange={(e) => updateText(type, { y: Number(e.target.value) })} /></Label>
+                    <Label>Font Size<Input disabled={text.enabled === false} type="number" value={text.fontSize} onChange={(e) => updateText(type, { fontSize: Number(e.target.value) })} /></Label>
+                    <Label>Color<Input disabled={text.enabled === false} type="color" value={text.color || "#221f1c"} onChange={(e) => updateText(type, { color: e.target.value })} /></Label>
+                    <Label>Font<select disabled={text.enabled === false} className="min-h-11 rounded-md border border-black/15 px-3 disabled:opacity-50" value={text.font || "sans-serif"} onChange={(e) => updateText(type, { font: e.target.value })}><option value="serif">Serif</option><option value="sans-serif">Sans</option></select></Label>
+                    <Label>Align<select disabled={text.enabled === false} className="min-h-11 rounded-md border border-black/15 px-3 disabled:opacity-50" value={text.align || "center"} onChange={(e) => updateText(type, { align: e.target.value as CanvasTextAlign })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Label>
                   </div>
                 );
               })}
@@ -359,62 +334,7 @@ export function DynamicFramePreview({
   layout?: AdminLayoutOption;
   className?: string;
 }) {
-  const config = normalizeFrameConfig(frame.configJson);
-  const layoutConfig = normalizeLayoutConfig(layout?.configJson);
-  const width = layout?.canvasWidth || 1200;
-  const height = layout?.canvasHeight || 1800;
-  const aspectRatio = `${width} / ${height}`;
-
-  return (
-    <div className={`overflow-hidden rounded-lg border border-black/10 bg-white p-3 shadow-sm ${className}`}>
-      <div
-        className="relative mx-auto w-full overflow-hidden rounded-md bg-cover bg-center"
-        style={{
-          aspectRatio,
-          maxHeight: "360px",
-          backgroundColor: frame.backgroundColor || "#ffffff",
-          backgroundImage: frame.backgroundImage ? `url(${assetPath(frame.backgroundImage)})` : undefined
-        }}
-      >
-        {layoutConfig.slots.map((slot, index) => (
-          <div
-            key={`${slot.x}-${slot.y}-${index}`}
-            className="absolute grid place-items-center border border-white/85 bg-black/20 text-[10px] font-semibold uppercase tracking-wide text-white shadow-inner"
-            style={{
-              left: `${(slot.x / width) * 100}%`,
-              top: `${(slot.y / height) * 100}%`,
-              width: `${(slot.width / width) * 100}%`,
-              height: `${(slot.height / height) * 100}%`
-            }}
-          >
-            Foto {index + 1}
-          </div>
-        ))}
-        {frame.overlayImage && <div className="absolute inset-0 bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url(${assetPath(frame.overlayImage)})` }} />}
-        {(config.texts || []).map((text, index) => (
-          <div
-            key={`${text.type}-${index}`}
-            className={text.font === "serif" ? "absolute whitespace-nowrap font-serif" : "absolute whitespace-nowrap font-sans"}
-            style={{
-              left: `${(text.x / width) * 100}%`,
-              top: `${(text.y / height) * 100}%`,
-              color: text.color || "#221f1c",
-              fontSize: `${Math.max(8, (text.fontSize / width) * 260)}px`,
-              transform: text.align === "right" ? "translate(-100%, -50%)" : text.align === "left" ? "translate(0, -50%)" : "translate(-50%, -50%)",
-              textAlign: text.align || "center",
-              textShadow: "0 1px 2px rgba(255,255,255,0.55)"
-            }}
-          >
-            {previewText(text)}
-          </div>
-        ))}
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-black/55">
-        <span>{width} x {height}</span>
-        <span className="text-right">{layoutConfig.slots.length} slot</span>
-      </div>
-    </div>
-  );
+  return <ExactFramePreview frame={frame} layout={layout} className={className} />;
 }
 
 function defaultText(type: FrameTextType): FrameText {
@@ -427,6 +347,7 @@ function defaultText(type: FrameTextType): FrameText {
     1600;
   return {
     type,
+    enabled: true,
     x: 600,
     y,
     value: type === "branding" ? "AWH Digital" : undefined,
@@ -452,7 +373,7 @@ function normalizeFrameConfig(value: unknown): FrameConfig {
   const config = value as FrameConfig;
   const existing = config.texts || [];
   const texts = [
-    ...defaults.map((text) => existing.find((entry) => entry.type === text.type) || text),
+    ...defaults.map((text) => ({ ...text, ...(existing.find((entry) => entry.type === text.type) || {}) })),
     ...existing.filter((entry) => !defaults.some((text) => text.type === entry.type))
   ];
   return {
@@ -467,15 +388,6 @@ function normalizeLayoutConfig(value: unknown): LayoutConfig {
   const config = value as LayoutConfig;
   if (!Array.isArray(config.slots)) return { slots: [] };
   return config;
-}
-
-function previewText(text: FrameText) {
-  if (text.type === "eventTheme") return "The Wedding of";
-  if (text.type === "coupleName") return "Alam & Ghina";
-  if (text.type === "venue") return "Edelweiss Wedding Hall";
-  if (text.type === "eventDate") return "30.09.2026";
-  if (text.type === "branding") return text.value || "AWH Digital";
-  return text.value || "Custom Text";
 }
 
 function UploadUrlField({ label, value, kind, onChange }: { label: string; value: string; kind: "events" | "frames" | "layouts" | "uploads"; onChange: (value: string) => void }) {

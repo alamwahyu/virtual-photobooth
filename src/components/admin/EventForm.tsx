@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
-import { appPath, publicEventUrl } from "@/lib/utils/base-path";
+import { appPath, assetPath, publicEventUrl } from "@/lib/utils/base-path";
 import { slugify } from "@/lib/utils/slug";
 
 type Option = { id: string; name: string; layoutId?: string };
@@ -99,8 +99,8 @@ export function EventForm({ initial, layouts, frames }: { initial?: EventFormVal
         <Label>Slug<Input value={value.slug} onChange={(e) => patch({ slug: slugify(e.target.value) })} required /></Label>
         <Label>Wedding Date<Input type="date" value={value.eventDate} onChange={(e) => patch({ eventDate: e.target.value })} required /></Label>
         <Label>Venue Name<Input value={value.venueName} onChange={(e) => patch({ venueName: e.target.value })} required /></Label>
-        <Label>Cover Image URL<Input value={value.coverImage} onChange={(e) => patch({ coverImage: e.target.value })} placeholder="/uploads/events/cover.webp" /></Label>
-        <Label>Logo URL<Input value={value.logoImage} onChange={(e) => patch({ logoImage: e.target.value })} /></Label>
+        <UploadImageField label="Cover Image URL" value={value.coverImage} kind="events" onChange={(coverImage) => patch({ coverImage })} />
+        <UploadImageField label="Logo URL" value={value.logoImage} kind="events" onChange={(logoImage) => patch({ logoImage })} />
         <Label>Venue Address<Textarea value={value.venueAddress} onChange={(e) => patch({ venueAddress: e.target.value })} /></Label>
         <Label>Description<Textarea value={value.description} onChange={(e) => patch({ description: e.target.value })} /></Label>
         <Label>Status<select className="min-h-11 rounded-md border border-black/15 px-3" value={value.status} onChange={(e) => patch({ status: e.target.value as EventFormValue["status"] })}><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></Label>
@@ -199,5 +199,42 @@ function ColorField({ label, description, value, onChange }: { label: string; de
         <Input value={value} onChange={(event) => onChange(event.target.value)} />
       </div>
     </label>
+  );
+}
+
+function UploadImageField({ label, value, kind, onChange }: { label: string; value: string; kind: "events" | "frames" | "layouts" | "uploads"; onChange: (value: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function upload(file?: File) {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    const form = new FormData();
+    form.set("file", file);
+    const response = await fetch(appPath(`/api/admin/upload?kind=${kind}`), { method: "POST", body: form });
+    setUploading(false);
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({ error: "Upload gagal." }));
+      setError(data.error);
+      return;
+    }
+    const data = (await response.json()) as { url: string };
+    onChange(data.url);
+  }
+
+  return (
+    <div className="space-y-2 text-sm font-medium">
+      <span>{label}</span>
+      <div className="flex gap-2">
+        <Input value={value} onChange={(event) => onChange(event.target.value)} placeholder="/uploads/events/cover.webp" />
+        <label className="touch-target inline-flex cursor-pointer items-center rounded-md border border-black/15 bg-white px-3 text-sm font-semibold hover:bg-linen">
+          {uploading ? "Uploading..." : "Upload"}
+          <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => upload(event.target.files?.[0])} />
+        </label>
+      </div>
+      {value && <img src={assetPath(value)} alt="" className="h-24 w-24 rounded-md border border-black/10 object-cover" />}
+      {error && <p className="text-xs text-red-700">{error}</p>}
+    </div>
   );
 }
