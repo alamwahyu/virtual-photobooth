@@ -1,5 +1,6 @@
 import { AdminShell } from "@/components/admin/AdminShell";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { LibraryModal } from "@/components/admin/LibraryModal";
 import { DynamicFramePreview, FrameEditor } from "@/components/admin/JsonCrud";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { prisma } from "@/lib/db/prisma";
@@ -36,70 +37,48 @@ export default async function FramesPage() {
         </div>
       </div>
 
-      <div className="grid gap-8">
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-serif text-3xl">Create Frame</h2>
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-black/55">Background + Overlay + Text</span>
-          </div>
-          <FrameEditor layouts={layouts} />
-        </section>
-
-        <section>
-          <div className="mb-3">
+      <section>
+        <div className="mb-4 flex flex-col justify-between gap-3 rounded-lg border border-black/10 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+          <div>
             <h2 className="font-serif text-3xl">Existing Frames</h2>
-            <p className="text-sm text-black/60">Preview di bawah dirender dari konfigurasi frame, bukan dari thumbnail statis.</p>
+            <p className="text-sm text-black/60">Satu baris untuk satu frame. Preview dirender dari konfigurasi frame aktif.</p>
           </div>
-          <div className="grid gap-4 xl:grid-cols-2">
+          <LibraryModal title="Create Frame" triggerLabel="Create Frame" mode="create">
+            <FrameEditor layouts={layouts} />
+          </LibraryModal>
+        </div>
+
+        <div className="grid gap-3">
           {frames.map((frame) => (
-            <div key={frame.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-soft">
-              <div className="grid gap-0 md:grid-cols-[240px_1fr]">
-                <div className="bg-linen/60 p-4">
-                  <DynamicFramePreview frame={{ ...frame, configJson: frame.configJson }} layout={frame.layout} />
+            <div key={frame.id} className="grid gap-4 rounded-lg border border-black/10 bg-white p-4 shadow-sm lg:grid-cols-[120px_1fr_auto] lg:items-center">
+              <div className="w-full max-w-[140px] lg:max-w-none">
+                <DynamicFramePreview frame={{ ...frame, configJson: frame.configJson }} layout={frame.layout} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="min-w-0 break-words font-serif text-2xl leading-tight">{frame.name}</h3>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${frame.isActive ? "bg-green-50 text-green-700" : "bg-black/5 text-black/50"}`}>
+                    {frame.isActive ? "Active" : "Inactive"}
+                  </span>
                 </div>
-                <div className="flex flex-col justify-between gap-4 p-5">
-                  <div>
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-serif text-3xl leading-tight">{frame.name}</h3>
-                        <p className="mt-1 text-sm text-black/60">{frame.layout.name} · {frame.slug}</p>
-                      </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${frame.isActive ? "bg-green-50 text-green-700" : "bg-black/5 text-black/50"}`}>
-                        {frame.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                    <div className="mt-5 grid gap-2 text-sm text-black/60 sm:grid-cols-3">
-                      <div className="rounded-md border border-black/10 p-3">
-                        <div className="text-xs uppercase tracking-wide text-black/40">Background</div>
-                        <div className="mt-1 font-medium text-ink">{frame.backgroundImage ? "Image" : frame.backgroundColor}</div>
-                      </div>
-                      <div className="rounded-md border border-black/10 p-3">
-                        <div className="text-xs uppercase tracking-wide text-black/40">Overlay</div>
-                        <div className="mt-1 font-medium text-ink">{frame.overlayImage ? "Uploaded" : "None"}</div>
-                      </div>
-                      <div className="rounded-md border border-black/10 p-3">
-                        <div className="text-xs uppercase tracking-wide text-black/40">Text</div>
-                        <div className="mt-1 font-medium text-ink">{Array.isArray((frame.configJson as { texts?: unknown[] }).texts) ? (frame.configJson as { texts: unknown[] }).texts.length : 0} layer</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-4">
-                    <DeleteButton endpoint={`/api/admin/frames/${frame.id}`} label="Delete" />
-                  </div>
+                <p className="mt-1 break-words text-sm text-black/60">{frame.layout.name} · {frame.slug}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-black/55">
+                  <span className="rounded-full bg-linen px-3 py-1">{frame.backgroundImage ? "Background image" : frame.backgroundColor}</span>
+                  <span className="rounded-full bg-linen px-3 py-1">{frame.overlayImage ? "Overlay uploaded" : "No overlay"}</span>
+                  <span className="rounded-full bg-linen px-3 py-1">{Array.isArray((frame.configJson as { texts?: unknown[] }).texts) ? (frame.configJson as { texts: unknown[] }).texts.length : 0} text layer</span>
                 </div>
               </div>
-              <details className="border-t border-black/10">
-                <summary className="cursor-pointer bg-linen/40 px-5 py-3 text-sm font-semibold">Edit frame settings</summary>
-                <div className="p-5">
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <LibraryModal title={`Edit Frame: ${frame.name}`} triggerLabel="Edit">
                   <FrameEditor compact initial={{ ...frame, configJson: frame.configJson }} layouts={layouts} />
-                </div>
-              </details>
+                </LibraryModal>
+                <DeleteButton endpoint={`/api/admin/frames/${frame.id}`} label="Delete" />
+              </div>
             </div>
           ))}
-          </div>
-          {!frames.length && <p className="rounded-lg bg-white p-5 text-sm text-black/60 shadow-soft">Belum ada frame.</p>}
-        </section>
-      </div>
+        </div>
+        {!frames.length && <p className="rounded-lg bg-white p-5 text-sm text-black/60 shadow-soft">Belum ada frame.</p>}
+      </section>
     </AdminShell>
   );
 }

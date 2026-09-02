@@ -8,7 +8,7 @@ export function DeleteButton({ endpoint, label }: { endpoint: string; label: str
   return (
     <button
       type="button"
-      className="text-red-700"
+      className="touch-target rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
       onClick={async () => {
         if (!window.confirm(`Hapus ${label}?`)) return;
         const response = await fetch(appPath(endpoint), { method: "DELETE" });
