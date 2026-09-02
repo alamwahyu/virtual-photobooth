@@ -44,14 +44,14 @@ export function CameraView({
       <div className="photobooth-camera__shade-bottom" />
 
       <div className="photobooth-camera__top flex items-center justify-between gap-3 px-4">
-        <button type="button" aria-label="Batalkan sesi" onClick={onCancel} className="touch-target rounded-full bg-black/35 p-3 backdrop-blur">
+        <button type="button" aria-label="Batalkan sesi" title="Batalkan sesi" onClick={onCancel} className="touch-target rounded-full bg-black/35 p-3 backdrop-blur">
           <X size={22} />
         </button>
         <div className="min-w-0 text-center">
           <div className="truncate font-serif text-lg sm:text-xl">{title}</div>
           <div className="text-sm text-white/70">Pose {pose} dari {total}</div>
         </div>
-        <button type="button" aria-label="Balik kamera" onClick={onFlip} className="touch-target rounded-full bg-black/35 p-3 backdrop-blur">
+        <button type="button" aria-label="Balik kamera" title="Balik kamera" onClick={onFlip} className="touch-target rounded-full bg-black/35 p-3 backdrop-blur">
           <RefreshCw size={22} />
         </button>
       </div>
@@ -76,11 +76,11 @@ export function CameraView({
           <h2 className="mt-3 font-serif text-3xl">Kamera tidak bisa diakses</h2>
           <p className="mt-2 text-sm leading-relaxed text-white/78">{cameraError}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={onRetry} className="touch-target rounded-md bg-white px-5 font-semibold text-black">
-              Coba Lagi
+            <button type="button" aria-label="Coba lagi" title="Coba lagi" onClick={onRetry} className="touch-target inline-flex items-center justify-center rounded-md bg-white px-5 font-semibold text-black">
+              <RefreshCw size={18} />
             </button>
-            <button type="button" onClick={onCancel} className="touch-target rounded-md border border-white/25 bg-white/10 px-5 font-semibold text-white">
-              Kembali
+            <button type="button" aria-label="Kembali" title="Kembali" onClick={onCancel} className="touch-target inline-flex items-center justify-center rounded-md border border-white/25 bg-white/10 px-5 font-semibold text-white">
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -99,7 +99,7 @@ export function CameraView({
       </div>
 
       <div className="photobooth-camera__action flex justify-center px-4">
-        <button type="button" aria-label="Ambil foto" disabled={disabled || Boolean(cameraError)} onClick={onCapture} className="photobooth-camera__capture touch-target rounded-full bg-white text-black shadow-soft disabled:opacity-60">
+        <button type="button" aria-label="Ambil foto" title="Ambil foto" disabled={disabled || Boolean(cameraError)} onClick={onCapture} className="photobooth-camera__capture touch-target rounded-full bg-white text-black shadow-soft disabled:opacity-60">
           <Camera size={30} strokeWidth={2.35} />
         </button>
       </div>

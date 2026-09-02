@@ -4,9 +4,8 @@ import { Copy } from "lucide-react";
 
 export function CopyUrlButton({ url }: { url: string }) {
   return (
-    <button type="button" onClick={() => navigator.clipboard.writeText(url)} className="inline-flex items-center gap-2 rounded-md border border-black/10 px-2 py-1 text-xs">
+    <button type="button" aria-label="Copy URL" title="Copy URL" onClick={() => navigator.clipboard.writeText(url)} className="inline-flex items-center justify-center rounded-md border border-black/10 p-2 text-xs">
       <Copy size={14} />
-      Copy URL
     </button>
   );
 }

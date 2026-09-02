@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Download, QrCode, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/Button";
@@ -177,14 +178,16 @@ export function EventForm({ initial, layouts, frames }: { initial?: EventFormVal
         <p className="text-sm text-black/60">URL Preview</p>
         <p className="break-all font-medium">{url}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" onClick={async () => setQr(await QRCode.toDataURL(url, { width: 512 }))}>Preview QR</Button>
-          {qr && <a className="rounded-md border border-black/15 px-4 py-2 text-sm font-semibold" download={`qr-${value.slug}.png`} href={qr}>Download QR PNG</a>}
+          <Button type="button" variant="secondary" className="px-3" onClick={async () => setQr(await QRCode.toDataURL(url, { width: 512 }))} aria-label="Preview QR" title="Preview QR">
+            <QrCode size={17} />
+          </Button>
+          {qr && <a className="touch-target inline-flex items-center justify-center rounded-md border border-black/15 px-3 py-2 text-sm font-semibold" aria-label="Download QR PNG" title="Download QR PNG" download={`qr-${value.slug}.png`} href={qr}><Download size={17} /></a>}
         </div>
         {qr && <img alt="QR public URL" src={qr} className="mt-4 h-44 w-44 rounded-md border bg-white p-2" />}
       </div>
 
       {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      <Button type="submit">Simpan Event</Button>
+      <Button type="submit" className="px-3" aria-label="Simpan event" title="Simpan event"><Save size={17} /></Button>
     </form>
   );
 }

@@ -30,7 +30,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           ))}
           <LogoutButton>
             <LogOut size={18} />
-            Logout
           </LogoutButton>
         </nav>
       </aside>

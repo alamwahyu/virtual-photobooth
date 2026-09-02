@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { appPath } from "@/lib/utils/base-path";
 
 export function DeleteButton({ endpoint, label }: { endpoint: string; label: string }) {
@@ -8,7 +9,9 @@ export function DeleteButton({ endpoint, label }: { endpoint: string; label: str
   return (
     <button
       type="button"
-      className="touch-target rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+      aria-label={`Hapus ${label}`}
+      title={`Hapus ${label}`}
+      className="touch-target inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-700 transition hover:bg-red-100"
       onClick={async () => {
         if (!window.confirm(`Hapus ${label}?`)) return;
         const response = await fetch(appPath(endpoint), { method: "DELETE" });
@@ -20,7 +23,7 @@ export function DeleteButton({ endpoint, label }: { endpoint: string; label: str
         router.refresh();
       }}
     >
-      {label}
+      <Trash2 size={17} />
     </button>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CheckCircle2, LoaderCircle, Plus, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ExactFramePreview, ExactLayoutPreview } from "@/components/admin/CanvasPreview";
 import { Button } from "@/components/ui/Button";
@@ -74,6 +75,8 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
     isActive: true
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [saving, setSaving] = useState(false);
   const layoutConfig = normalizeLayoutConfig(item.configJson);
   const draftLayoutOption: AdminLayoutOption = {
     id: item.id || "new-layout",
@@ -113,47 +116,57 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
+    setSuccess("");
     if (!item.id && createFrame && (!draftFrame.name || !draftFrame.slug)) {
       setError("Nama dan slug frame wajib diisi jika opsi tambah frame aktif.");
       return;
     }
 
-    const response = await fetch(appPath(item.id ? `/api/admin/layouts/${item.id}` : "/api/admin/layouts"), {
-      method: item.id ? "PATCH" : "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...item, configJson: JSON.stringify(item.configJson) })
-    });
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({ error: "Gagal menyimpan layout." }));
-      setError(data.error);
-      return;
-    }
-
-    const savedLayout = (await response.json()) as { id: string };
-    if (!item.id && createFrame) {
-      const frameResponse = await fetch(appPath("/api/admin/frames"), {
-        method: "POST",
+    setSaving(true);
+    try {
+      const response = await fetch(appPath(item.id ? `/api/admin/layouts/${item.id}` : "/api/admin/layouts"), {
+        method: item.id ? "PATCH" : "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...draftFrame,
-          layoutId: savedLayout.id,
-          configJson: JSON.stringify(draftFrame.configJson)
-        })
+        body: JSON.stringify({ ...item, configJson: JSON.stringify(item.configJson) })
       });
-      if (!frameResponse.ok) {
-        const data = await frameResponse.json().catch(() => ({ error: "Layout tersimpan, tetapi frame gagal dibuat." }));
-        setError(`Layout tersimpan, tetapi frame gagal dibuat: ${data.error}`);
-        router.refresh();
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Gagal menyimpan layout." }));
+        setError(data.error);
         return;
       }
-    }
 
-    router.refresh();
-    if (!item.id) setItem({ ...item, name: "", slug: "" });
+      const savedLayout = (await response.json()) as { id: string };
+      if (!item.id && createFrame) {
+        const frameResponse = await fetch(appPath("/api/admin/frames"), {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            ...draftFrame,
+            layoutId: savedLayout.id,
+            configJson: JSON.stringify(draftFrame.configJson)
+          })
+        });
+        if (!frameResponse.ok) {
+          const data = await frameResponse.json().catch(() => ({ error: "Layout tersimpan, tetapi frame gagal dibuat." }));
+          setError(`Layout tersimpan, tetapi frame gagal dibuat: ${data.error}`);
+          router.refresh();
+          return;
+        }
+      }
+
+      setSuccess(item.id ? "Layout berhasil diperbarui." : createFrame ? "Layout dan frame berhasil dibuat." : "Layout berhasil dibuat.");
+      router.refresh();
+      if (!item.id) setItem({ ...item, name: "", slug: "" });
+    } catch {
+      setError("Gagal menyimpan layout. Periksa koneksi atau coba beberapa saat lagi.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
-    <form onSubmit={submit} className={`admin-editor-form ${compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}`}>
+    <form onSubmit={submit} className={`admin-editor-form relative ${compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}`}>
+      {saving && <EditorSavingOverlay label="Menyimpan layout..." />}
       <div className={compact ? "grid gap-0" : "grid gap-0 lg:grid-cols-[310px_1fr]"}>
         {!compact && (
         <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
@@ -209,14 +222,14 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
                 <h3 className="font-serif text-2xl">Photo Slots</h3>
                 <p className="text-sm text-black/60">Atur posisi foto dan bentuk sudut bingkai. Nilai memakai pixel dari ukuran canvas asli.</p>
               </div>
-              <Button type="button" variant="secondary" onClick={addSlot}>Tambah Slot</Button>
+              <Button type="button" variant="secondary" className="px-3" onClick={addSlot} aria-label="Tambah slot" title="Tambah slot"><Plus size={17} /></Button>
             </div>
             <div className="grid gap-3 p-4">
               {layoutConfig.slots.map((slot, index) => (
                 <div key={`${slot.x}-${slot.y}-${index}`} className="rounded-md bg-linen/60 p-3">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="font-medium">Foto {index + 1}</div>
-                    <Button type="button" variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1}>Hapus</Button>
+                    <Button type="button" variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1} aria-label={`Hapus foto ${index + 1}`} title={`Hapus foto ${index + 1}`}><Trash2 size={15} /></Button>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
                     <Label>X<Input type="number" value={slot.x} onChange={(e) => updateSlot(index, { x: Number(e.target.value) })} /></Label>
@@ -267,9 +280,12 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
               <Label>Config JSON<Textarea value={JSON.stringify(item.configJson, null, 2)} onChange={(e) => { try { setItem({ ...item, configJson: JSON.parse(e.target.value) }); } catch { setError("JSON config tidak valid."); } }} /></Label>
             </div>
           </details>
+          {success && <EditorSuccessMessage message={success} />}
           {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           <div className="flex justify-end">
-            <Button type="submit">Simpan Layout</Button>
+            <Button type="submit" disabled={saving} className="px-3" aria-label={saving ? "Menyimpan layout" : "Simpan layout"} title={saving ? "Menyimpan layout" : "Simpan layout"}>
+              {saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}
+            </Button>
           </div>
         </div>
       </div>
@@ -299,6 +315,8 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
     id: initial?.id
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const frameConfig = normalizeFrameConfig(item.configJson);
   const selectedLayout = layouts.find((layout) => layout.id === item.layoutId);
@@ -317,22 +335,32 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
-    const response = await fetch(appPath(item.id ? `/api/admin/frames/${item.id}` : "/api/admin/frames"), {
-      method: item.id ? "PATCH" : "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...item, configJson: JSON.stringify(item.configJson) })
-    });
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({ error: "Gagal menyimpan frame." }));
-      setError(data.error);
-      return;
+    setSuccess("");
+    setSaving(true);
+    try {
+      const response = await fetch(appPath(item.id ? `/api/admin/frames/${item.id}` : "/api/admin/frames"), {
+        method: item.id ? "PATCH" : "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...item, configJson: JSON.stringify(item.configJson) })
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Gagal menyimpan frame." }));
+        setError(data.error);
+        return;
+      }
+      setSuccess(item.id ? "Frame berhasil diperbarui." : "Frame berhasil dibuat.");
+      router.refresh();
+      if (!item.id) setItem({ ...item, name: "", slug: "" });
+    } catch {
+      setError("Gagal menyimpan frame. Periksa koneksi atau coba beberapa saat lagi.");
+    } finally {
+      setSaving(false);
     }
-    router.refresh();
-    if (!item.id) setItem({ ...item, name: "", slug: "" });
   }
 
   return (
-    <form onSubmit={submit} className={`admin-editor-form ${compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}`}>
+    <form onSubmit={submit} className={`admin-editor-form relative ${compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}`}>
+      {saving && <EditorSavingOverlay label="Menyimpan frame..." />}
       <div className={compact ? "grid gap-0" : "grid gap-0 lg:grid-cols-[310px_1fr]"}>
         {!compact && (
         <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
@@ -400,9 +428,12 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
               <Label>Config JSON<Textarea value={JSON.stringify(item.configJson, null, 2)} onChange={(e) => { try { setItem({ ...item, configJson: JSON.parse(e.target.value) }); } catch { setError("JSON config tidak valid."); } }} /></Label>
             </div>
           </details>
+          {success && <EditorSuccessMessage message={success} />}
           {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           <div className="flex justify-end">
-            <Button type="submit">Simpan Frame</Button>
+            <Button type="submit" disabled={saving} className="px-3" aria-label={saving ? "Menyimpan frame" : "Simpan frame"} title={saving ? "Menyimpan frame" : "Simpan frame"}>
+              {saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}
+            </Button>
           </div>
         </div>
       </div>
@@ -420,6 +451,27 @@ export function DynamicFramePreview({
   className?: string;
 }) {
   return <ExactFramePreview frame={frame} layout={layout} className={className} />;
+}
+
+function EditorSavingOverlay({ label }: { label: string }) {
+  return (
+    <div className="absolute inset-0 z-20 grid place-items-center rounded-lg bg-white/75 px-4 text-center backdrop-blur-[2px]">
+      <div className="rounded-lg border border-black/10 bg-white px-5 py-4 shadow-soft">
+        <LoaderCircle className="mx-auto animate-spin text-gold" size={26} />
+        <p className="mt-2 text-sm font-semibold text-ink">{label}</p>
+        <p className="mt-1 text-xs text-black/55">Mohon tunggu, perubahan sedang diproses.</p>
+      </div>
+    </div>
+  );
+}
+
+function EditorSuccessMessage({ message }: { message: string }) {
+  return (
+    <p className="flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
+      <CheckCircle2 size={17} />
+      {message}
+    </p>
+  );
 }
 
 function defaultText(type: FrameTextType): FrameText {

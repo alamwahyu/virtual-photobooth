@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ArrowLeft, Camera, ImagePlus } from "lucide-react";
+import { ArrowLeft, Camera, Check, Clock, ImagePlus } from "lucide-react";
 import { CameraView } from "@/components/photobooth/CameraView";
 import { FrameSelector } from "@/components/photobooth/FrameSelector";
 import { LayoutSelector } from "@/components/photobooth/LayoutSelector";
@@ -259,9 +259,8 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
           <section className="mx-auto max-w-xl space-y-5 rounded-lg border border-black/10 bg-white/75 p-5 text-center shadow-soft sm:p-6">
             <StepHeader step={3} title="Siap mulai foto" description={`${layout.name} · ${frame.name}`} onBack={() => setState("SELECTING_FRAME")} centered />
             <p className="text-sm leading-relaxed text-black/65">Foto diproses langsung di perangkatmu. Kamera hanya digunakan selama sesi photobooth berlangsung.</p>
-            <button type="button" onClick={openCameraIntro} className="touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white">
-              <Camera className="mr-2 inline" size={19} />
-              Mulai Foto
+            <button type="button" aria-label="Mulai foto" title="Mulai foto" onClick={openCameraIntro} className="touch-target inline-flex w-full items-center justify-center rounded-md bg-ink px-6 py-3 font-semibold text-white">
+              <Camera size={20} />
             </button>
             {cameraError && <p className="text-sm text-red-700">{cameraError}</p>}
           </section>
@@ -290,7 +289,9 @@ export function PhotoboothApp({ event }: { event: PublicEvent }) {
           <section className="space-y-5">
             <h2 className="font-serif text-3xl sm:text-4xl">Review pose</h2>
             <PhotoPreview photos={photos} retaking={retakeIndex !== null} onRetake={retake} />
-            <button type="button" onClick={compose} className="touch-target w-full rounded-md bg-ink px-6 py-3 font-semibold text-white sm:w-auto">Gunakan Foto Ini</button>
+            <button type="button" aria-label="Gunakan foto ini" title="Gunakan foto ini" onClick={compose} className="touch-target inline-flex w-full items-center justify-center rounded-md bg-ink px-6 py-3 font-semibold text-white sm:w-auto">
+              <Check size={20} />
+            </button>
           </section>
         )}
 
@@ -333,16 +334,14 @@ function CameraIntroModal({
           <p>3. Jika memakai galeri, pilih {photoCount} foto sesuai jumlah pose pada tata letak ini.</p>
         </div>
         <div className="mt-6 grid gap-3">
-          <button type="button" onClick={onContinue} className="touch-target rounded-md bg-ink px-5 font-semibold text-white">
-            <Camera className="mr-2 inline" size={18} />
-            Lanjutkan ke Kamera
+          <button type="button" aria-label="Lanjutkan ke kamera" title="Lanjutkan ke kamera" onClick={onContinue} className="touch-target inline-flex items-center justify-center rounded-md bg-ink px-5 font-semibold text-white">
+            <Camera size={18} />
           </button>
-          <button type="button" onClick={onChooseGallery} className="touch-target rounded-md border border-black/15 bg-white px-5 font-semibold text-ink">
-            <ImagePlus className="mr-2 inline" size={18} />
-            Pilih Foto dari Galeri
+          <button type="button" aria-label="Pilih foto dari galeri" title="Pilih foto dari galeri" onClick={onChooseGallery} className="touch-target inline-flex items-center justify-center rounded-md border border-black/15 bg-white px-5 font-semibold text-ink">
+            <ImagePlus size={18} />
           </button>
-          <button type="button" onClick={onCancel} className="touch-target rounded-md px-5 font-semibold text-black/60">
-            Nanti Saja
+          <button type="button" aria-label="Nanti saja" title="Nanti saja" onClick={onCancel} className="touch-target inline-flex items-center justify-center rounded-md px-5 font-semibold text-black/60">
+            <Clock size={18} />
           </button>
         </div>
       </section>
@@ -371,7 +370,7 @@ function StepHeader({
         <p className="mt-1 text-sm text-black/60">{description}</p>
       </div>
       {onBack && (
-        <button type="button" onClick={onBack} aria-label="Kembali" className="touch-target shrink-0 rounded-full border border-black/10 bg-white/80 p-3 shadow-sm">
+        <button type="button" onClick={onBack} aria-label="Kembali" title="Kembali" className="touch-target shrink-0 rounded-full border border-black/10 bg-white/80 p-3 shadow-sm">
           <ArrowLeft size={20} />
         </button>
       )}

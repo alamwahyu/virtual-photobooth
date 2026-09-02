@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LoaderCircle, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
@@ -37,7 +38,9 @@ export function LoginForm() {
       <Label>Email<Input name="email" type="email" required autoComplete="email" /></Label>
       <Label>Password<Input name="password" type="password" required autoComplete="current-password" /></Label>
       {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      <Button disabled={loading} className="w-full">{loading ? "Memproses..." : "Login"}</Button>
+      <Button disabled={loading} className="w-full justify-center" aria-label={loading ? "Memproses login" : "Login"} title={loading ? "Memproses login" : "Login"}>
+        {loading ? <LoaderCircle className="animate-spin" size={18} /> : <LogIn size={18} />}
+      </Button>
     </form>
   );
 }
