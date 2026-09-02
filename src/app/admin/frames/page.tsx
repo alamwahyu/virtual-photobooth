@@ -70,7 +70,7 @@ export default async function FramesPage() {
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <LibraryModal title={`Edit Frame: ${frame.name}`} triggerLabel="Edit">
-                  <FrameEditor compact initial={{ ...frame, configJson: frame.configJson }} layouts={layouts} />
+                  <FrameEditor initial={{ ...frame, configJson: frame.configJson }} layouts={layouts} />
                 </LibraryModal>
                 <DeleteButton endpoint={`/api/admin/frames/${frame.id}`} label="Delete" />
               </div>

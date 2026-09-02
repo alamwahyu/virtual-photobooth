@@ -153,7 +153,7 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
   }
 
   return (
-    <form onSubmit={submit} className={compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}>
+    <form onSubmit={submit} className={`admin-editor-form ${compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}`}>
       <div className={compact ? "grid gap-0" : "grid gap-0 lg:grid-cols-[310px_1fr]"}>
         {!compact && (
         <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
@@ -165,7 +165,7 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
           </div>
         </aside>
         )}
-        <div className={compact ? "grid gap-5" : "grid gap-5 p-5"}>
+        <div className={compact ? "grid gap-4" : "grid gap-4 p-4"}>
           {compact && (
             <div className="grid gap-4 rounded-md border border-black/10 bg-linen/40 p-4 md:grid-cols-[220px_1fr]">
               <ExactLayoutPreview layout={{ ...item, configJson: layoutConfig }} />
@@ -213,16 +213,20 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
             </div>
             <div className="grid gap-3 p-4">
               {layoutConfig.slots.map((slot, index) => (
-                <div key={`${slot.x}-${slot.y}-${index}`} className="grid gap-3 rounded-md bg-linen/60 p-3 lg:grid-cols-[80px_repeat(7,minmax(0,1fr))_auto] lg:items-end">
-                  <div className="font-medium">Foto {index + 1}</div>
-                  <Label>X<Input type="number" value={slot.x} onChange={(e) => updateSlot(index, { x: Number(e.target.value) })} /></Label>
-                  <Label>Y<Input type="number" value={slot.y} onChange={(e) => updateSlot(index, { y: Number(e.target.value) })} /></Label>
-                  <Label>Width<Input type="number" min={1} value={slot.width} onChange={(e) => updateSlot(index, { width: Number(e.target.value) })} /></Label>
-                  <Label>Height<Input type="number" min={1} value={slot.height} onChange={(e) => updateSlot(index, { height: Number(e.target.value) })} /></Label>
-                  <Label>Bentuk<select className="min-h-11 rounded-md border border-black/15 px-3" value={slot.shape || "miter"} onChange={(e) => updateSlot(index, { shape: e.target.value as PhotoSlotShape })}><option value="miter">Kotak / Miter</option><option value="rounded">Oval / Rounded</option><option value="oval">Oval Penuh</option><option value="polaroid">Polaroid</option></select></Label>
-                  <Label>Border Width<Input type="number" min={0} value={slot.borderWidth ?? 0} onChange={(e) => updateSlot(index, { borderWidth: Math.max(0, Number(e.target.value)) })} /></Label>
-                  <Label>Border Color<Input type="color" value={slot.borderColor || "#ffffff"} onChange={(e) => updateSlot(index, { borderColor: e.target.value })} /></Label>
-                  <Button type="button" variant="secondary" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1}>Hapus</Button>
+                <div key={`${slot.x}-${slot.y}-${index}`} className="rounded-md bg-linen/60 p-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="font-medium">Foto {index + 1}</div>
+                    <Button type="button" variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1}>Hapus</Button>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+                    <Label>X<Input type="number" value={slot.x} onChange={(e) => updateSlot(index, { x: Number(e.target.value) })} /></Label>
+                    <Label>Y<Input type="number" value={slot.y} onChange={(e) => updateSlot(index, { y: Number(e.target.value) })} /></Label>
+                    <Label>Width<Input type="number" min={1} value={slot.width} onChange={(e) => updateSlot(index, { width: Number(e.target.value) })} /></Label>
+                    <Label>Height<Input type="number" min={1} value={slot.height} onChange={(e) => updateSlot(index, { height: Number(e.target.value) })} /></Label>
+                    <Label>Bentuk<select className="min-h-11 rounded-md border border-black/15 px-3" value={slot.shape || "miter"} onChange={(e) => updateSlot(index, { shape: e.target.value as PhotoSlotShape })}><option value="miter">Kotak / Miter</option><option value="rounded">Oval / Rounded</option><option value="oval">Oval Penuh</option><option value="polaroid">Polaroid</option></select></Label>
+                    <Label>Border Width<Input type="number" min={0} value={slot.borderWidth ?? 0} onChange={(e) => updateSlot(index, { borderWidth: Math.max(0, Number(e.target.value)) })} /></Label>
+                    <Label>Border Color<Input type="color" value={slot.borderColor || "#ffffff"} onChange={(e) => updateSlot(index, { borderColor: e.target.value })} /></Label>
+                  </div>
                 </div>
               ))}
             </div>
@@ -328,7 +332,7 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
   }
 
   return (
-    <form onSubmit={submit} className={compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}>
+    <form onSubmit={submit} className={`admin-editor-form ${compact ? "rounded-md bg-white" : "rounded-lg border border-black/10 bg-white shadow-soft"}`}>
       <div className={compact ? "grid gap-0" : "grid gap-0 lg:grid-cols-[310px_1fr]"}>
         {!compact && (
         <aside className="border-b border-black/10 bg-linen/50 p-5 lg:border-b-0 lg:border-r">
@@ -340,7 +344,7 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
           </div>
         </aside>
         )}
-        <div className={compact ? "grid gap-5" : "grid gap-5 p-5"}>
+        <div className={compact ? "grid gap-4" : "grid gap-4 p-4"}>
           {compact && (
             <div className="grid gap-4 rounded-md border border-black/10 bg-linen/40 p-4 md:grid-cols-[220px_1fr]">
               <ExactFramePreview frame={{ ...item, configJson: frameConfig }} layout={selectedLayout} />
@@ -368,8 +372,8 @@ export function FrameEditor({ initial, layouts, compact = false }: { initial?: P
               {(["eventTheme", "coupleName", "venue", "eventDate", "branding"] as const).map((type) => {
                 const text = frameConfig.texts?.find((entry) => entry.type === type) || defaultText(type);
                 return (
-                  <div key={type} className={`grid gap-3 rounded-md bg-white p-3 transition md:grid-cols-6 ${text.enabled === false ? "opacity-60" : ""}`}>
-                    <div className="flex items-center justify-between gap-3 md:col-span-6">
+                  <div key={type} className={`grid gap-2 rounded-md bg-white p-2.5 transition md:grid-cols-3 xl:grid-cols-6 ${text.enabled === false ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between gap-3 md:col-span-3 xl:col-span-6">
                       <div>
                         <div className="font-medium">{textLabel(type)}</div>
                         <div className="text-xs text-black/50">{text.enabled === false ? "Tidak ditampilkan di hasil final" : "Ditampilkan di hasil final"}</div>

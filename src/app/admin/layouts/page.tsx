@@ -68,7 +68,7 @@ export default async function LayoutsPage() {
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <LibraryModal title={`Edit Layout: ${layout.name}`} triggerLabel="Edit">
-                  <LayoutEditor compact initial={{ ...layout, configJson: layout.configJson }} />
+                  <LayoutEditor initial={{ ...layout, configJson: layout.configJson }} />
                 </LibraryModal>
                 <DeleteButton endpoint={`/api/admin/layouts/${layout.id}`} label="Delete" />
               </div>

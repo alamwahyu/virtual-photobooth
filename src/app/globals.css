@@ -494,3 +494,30 @@ select {
     animation: none;
   }
 }
+
+.admin-editor-form label {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.admin-editor-form input:not([type="checkbox"]),
+.admin-editor-form select,
+.admin-editor-form textarea {
+  min-height: 38px;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.admin-editor-form textarea {
+  min-height: 88px;
+}
+
+.admin-editor-form input[type="color"] {
+  padding: 4px;
+}
+
+.admin-editor-form .touch-target {
+  min-height: 38px;
+}
