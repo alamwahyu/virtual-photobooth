@@ -6,6 +6,8 @@ export type PhotoSlot = {
   width: number;
   height: number;
   shape?: PhotoSlotShape;
+  borderWidth?: number;
+  borderColor?: string;
 };
 
 export type LayoutConfig = {

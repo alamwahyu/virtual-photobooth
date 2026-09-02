@@ -51,9 +51,17 @@ export function drawSlotFrame(ctx: CanvasRenderingContext2D, slot: PhotoSlot, op
   }
 
   if (!options?.preview) return;
+  drawSlotBorder(ctx, slot, options);
+}
+
+export function drawSlotBorder(ctx: CanvasRenderingContext2D, slot: PhotoSlot, options?: { preview?: boolean }) {
+  const borderWidth = slot.borderWidth ?? 0;
+  if (!options?.preview && borderWidth <= 0) return;
+  const shape = normalizedSlotShape(slot);
+
   ctx.save();
-  ctx.strokeStyle = shape === "oval" ? "rgba(181,139,75,0.95)" : "#b58b4b";
-  ctx.lineWidth = Math.max(3, slot.width / 140);
+  ctx.strokeStyle = slot.borderColor || (shape === "oval" ? "rgba(181,139,75,0.95)" : "#b58b4b");
+  ctx.lineWidth = borderWidth > 0 ? borderWidth : Math.max(3, slot.width / 140);
   addSlotPath(ctx, slot);
   ctx.stroke();
   ctx.restore();

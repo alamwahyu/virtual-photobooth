@@ -55,7 +55,7 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
     canvasWidth: initial?.canvasWidth || 1200,
     canvasHeight: initial?.canvasHeight || 1800,
     previewImage: initial?.previewImage || "",
-    configJson: initial?.configJson || { slots: [{ x: 80, y: 80, width: 1040, height: 1200, shape: "miter" }] },
+    configJson: initial?.configJson || { slots: [{ x: 80, y: 80, width: 1040, height: 1200, shape: "miter", borderWidth: 0, borderColor: "#ffffff" }] },
     isActive: initial?.isActive ?? true,
     id: initial?.id
   });
@@ -97,7 +97,9 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
         y: 80 + layoutConfig.slots.length * 260,
         width: Math.max(240, item.canvasWidth - 160),
         height: 220,
-        shape: "miter" as PhotoSlotShape
+        shape: "miter" as PhotoSlotShape,
+        borderWidth: 0,
+        borderColor: "#ffffff"
       }
     ];
     setItem({ ...item, photoCount: slots.length, configJson: { ...layoutConfig, slots } });
@@ -211,13 +213,15 @@ export function LayoutEditor({ initial, compact = false }: { initial?: Partial<L
             </div>
             <div className="grid gap-3 p-4">
               {layoutConfig.slots.map((slot, index) => (
-                <div key={`${slot.x}-${slot.y}-${index}`} className="grid gap-3 rounded-md bg-linen/60 p-3 md:grid-cols-[80px_repeat(5,1fr)_auto] md:items-end">
+                <div key={`${slot.x}-${slot.y}-${index}`} className="grid gap-3 rounded-md bg-linen/60 p-3 lg:grid-cols-[80px_repeat(7,minmax(0,1fr))_auto] lg:items-end">
                   <div className="font-medium">Foto {index + 1}</div>
                   <Label>X<Input type="number" value={slot.x} onChange={(e) => updateSlot(index, { x: Number(e.target.value) })} /></Label>
                   <Label>Y<Input type="number" value={slot.y} onChange={(e) => updateSlot(index, { y: Number(e.target.value) })} /></Label>
                   <Label>Width<Input type="number" min={1} value={slot.width} onChange={(e) => updateSlot(index, { width: Number(e.target.value) })} /></Label>
                   <Label>Height<Input type="number" min={1} value={slot.height} onChange={(e) => updateSlot(index, { height: Number(e.target.value) })} /></Label>
                   <Label>Bentuk<select className="min-h-11 rounded-md border border-black/15 px-3" value={slot.shape || "miter"} onChange={(e) => updateSlot(index, { shape: e.target.value as PhotoSlotShape })}><option value="miter">Kotak / Miter</option><option value="rounded">Oval / Rounded</option><option value="oval">Oval Penuh</option><option value="polaroid">Polaroid</option></select></Label>
+                  <Label>Border Width<Input type="number" min={0} value={slot.borderWidth ?? 0} onChange={(e) => updateSlot(index, { borderWidth: Math.max(0, Number(e.target.value)) })} /></Label>
+                  <Label>Border Color<Input type="color" value={slot.borderColor || "#ffffff"} onChange={(e) => updateSlot(index, { borderColor: e.target.value })} /></Label>
                   <Button type="button" variant="secondary" onClick={() => removeSlot(index)} disabled={layoutConfig.slots.length <= 1}>Hapus</Button>
                 </div>
               ))}
@@ -461,10 +465,10 @@ function normalizeFrameConfig(value: unknown): FrameConfig {
 }
 
 function normalizeLayoutConfig(value: unknown): LayoutConfig {
-  if (!value || typeof value !== "object") return { slots: [{ x: 80, y: 80, width: 1040, height: 1200, shape: "miter" }] };
+  if (!value || typeof value !== "object") return { slots: [{ x: 80, y: 80, width: 1040, height: 1200, shape: "miter", borderWidth: 0, borderColor: "#ffffff" }] };
   const config = value as LayoutConfig;
   if (!Array.isArray(config.slots)) return { slots: [] };
-  return { ...config, slots: config.slots.map((slot) => ({ ...slot, shape: slot.shape || "miter" })) };
+  return { ...config, slots: config.slots.map((slot) => ({ ...slot, shape: slot.shape || "miter", borderWidth: slot.borderWidth ?? 0, borderColor: slot.borderColor || "#ffffff" })) };
 }
 
 const fontOptions = [

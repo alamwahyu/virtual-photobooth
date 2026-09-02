@@ -1,7 +1,7 @@
 import { drawImageCover } from "@/lib/canvas/draw-image-cover";
 import { canvasFontFamily } from "@/lib/canvas/font-family";
 import { loadImage } from "@/lib/canvas/load-image";
-import { addSlotPath, drawSlotFrame, photoRectForSlot } from "@/lib/canvas/slot-shape";
+import { addSlotPath, drawSlotBorder, drawSlotFrame, photoRectForSlot } from "@/lib/canvas/slot-shape";
 import { compactDate } from "@/lib/utils/format";
 import type { PublicEvent, PublicFrame, PublicLayout } from "@/types";
 
@@ -106,6 +106,7 @@ export async function composePhotobooth({ event, layout, frame, photos }: Compos
       drawImageCover(ctx, image, photoRect.x, photoRect.y, photoRect.width, photoRect.height);
     }
     ctx.restore();
+    drawSlotBorder(ctx, slot);
   }
 
   if (frame.overlayImage) {

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { drawImageCover } from "@/lib/canvas/draw-image-cover";
 import { canvasFontFamily } from "@/lib/canvas/font-family";
 import { loadImage } from "@/lib/canvas/load-image";
-import { addSlotPath, drawSlotFrame, normalizedSlotShape, photoRectForSlot } from "@/lib/canvas/slot-shape";
+import { addSlotPath, drawSlotBorder, drawSlotFrame, normalizedSlotShape, photoRectForSlot } from "@/lib/canvas/slot-shape";
 import type { FrameConfig, FrameText, LayoutConfig } from "@/types";
 
 type LayoutPreviewInput = {
@@ -44,9 +44,7 @@ export function ExactLayoutPreview({ layout, className = "" }: { layout: LayoutP
         addSlotPath(ctx, slot);
         ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
         ctx.fill();
-        ctx.strokeStyle = "#b58b4b";
-        ctx.lineWidth = Math.max(3, width / 400);
-        ctx.stroke();
+        drawSlotBorder(ctx, slot, { preview: true });
         ctx.fillStyle = "#b58b4b";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -100,9 +98,7 @@ export function ExactFramePreview({ frame, layout, className = "" }: { frame: Fr
           addSlotPath(ctx, slot);
           ctx.fillStyle = "rgba(20, 20, 20, 0.24)";
           ctx.fill();
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.88)";
-          ctx.lineWidth = Math.max(3, width / 420);
-          ctx.stroke();
+          drawSlotBorder(ctx, slot, { preview: true });
           ctx.fillStyle = "#ffffff";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
