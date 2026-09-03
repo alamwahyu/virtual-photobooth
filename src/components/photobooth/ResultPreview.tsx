@@ -12,14 +12,17 @@ export function ResultPreview({ imageUrl, onDownload, onRestart, onShare }: { im
         <p className="font-serif text-xl text-ink">Simpan untuk dikenang di hari-hari nanti</p>
       </div>
       <div className="grid gap-3 sm:flex sm:flex-wrap sm:justify-center">
-        <button type="button" aria-label="Download photo" title="Download photo" onClick={onDownload} className="touch-target inline-flex items-center justify-center rounded-md bg-ink px-4 text-white">
-          <Download size={18} />
+        <button type="button" onClick={onDownload} className="touch-target inline-flex items-center justify-center rounded-md bg-ink px-5 text-white">
+          <Download className="mr-2 inline" size={18} />
+          Download Photo
         </button>
-        <button type="button" aria-label="Share" title="Share" onClick={onShare} className="touch-target inline-flex items-center justify-center rounded-md border border-black/15 bg-white px-4">
-          <Share2 size={18} />
+        <button type="button" onClick={onShare} className="touch-target inline-flex items-center justify-center rounded-md border border-black/15 bg-white px-5">
+          <Share2 className="mr-2 inline" size={18} />
+          Share
         </button>
-        <button type="button" aria-label="Ulangi foto" title="Ulangi foto" onClick={onRestart} className="touch-target inline-flex items-center justify-center rounded-md border border-black/15 bg-white px-4">
-          <RotateCcw size={18} />
+        <button type="button" onClick={onRestart} className="touch-target inline-flex items-center justify-center rounded-md border border-black/15 bg-white px-5">
+          <RotateCcw className="mr-2 inline" size={18} />
+          Ulangi Foto
         </button>
       </div>
     </section>

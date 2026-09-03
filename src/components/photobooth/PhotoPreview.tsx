@@ -1,7 +1,5 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
-
 export function PhotoPreview({ photos, retaking, onRetake }: { photos: string[]; retaking: boolean; onRetake: (index: number) => void }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -10,8 +8,8 @@ export function PhotoPreview({ photos, retaking, onRetake }: { photos: string[];
           <img src={photo} alt={`Pose ${index + 1}`} className="aspect-[4/3] w-full rounded-md object-cover" />
           <div className="mt-2 grid gap-2 sm:flex sm:items-center sm:justify-between">
             <span className="text-sm font-medium">Pose {index + 1}</span>
-            <button type="button" aria-label={`Retake pose ${index + 1}`} title={`Retake pose ${index + 1}`} disabled={retaking} onClick={() => onRetake(index)} className="touch-target inline-flex items-center justify-center rounded-md border px-3 text-sm hover:bg-linen disabled:opacity-50">
-              <RotateCcw size={16} />
+            <button type="button" disabled={retaking} onClick={() => onRetake(index)} className="touch-target inline-flex items-center justify-center rounded-md border px-3 text-sm hover:bg-linen disabled:opacity-50">
+              Retake
             </button>
           </div>
         </div>

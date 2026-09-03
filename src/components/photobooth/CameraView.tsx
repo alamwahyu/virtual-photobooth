@@ -76,11 +76,13 @@ export function CameraView({
           <h2 className="mt-3 font-serif text-3xl">Kamera tidak bisa diakses</h2>
           <p className="mt-2 text-sm leading-relaxed text-white/78">{cameraError}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <button type="button" aria-label="Coba lagi" title="Coba lagi" onClick={onRetry} className="touch-target inline-flex items-center justify-center rounded-md bg-white px-5 font-semibold text-black">
-              <RefreshCw size={18} />
+            <button type="button" onClick={onRetry} className="touch-target inline-flex items-center justify-center rounded-md bg-white px-5 font-semibold text-black">
+              <RefreshCw className="mr-2 inline" size={18} />
+              Coba Lagi
             </button>
-            <button type="button" aria-label="Kembali" title="Kembali" onClick={onCancel} className="touch-target inline-flex items-center justify-center rounded-md border border-white/25 bg-white/10 px-5 font-semibold text-white">
-              <X size={18} />
+            <button type="button" onClick={onCancel} className="touch-target inline-flex items-center justify-center rounded-md border border-white/25 bg-white/10 px-5 font-semibold text-white">
+              <X className="mr-2 inline" size={18} />
+              Kembali
             </button>
           </div>
         </div>
