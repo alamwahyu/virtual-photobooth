@@ -1,5 +1,6 @@
 "use client";
 
+import { ExactLayoutPreview } from "@/components/admin/CanvasPreview";
 import type { PublicLayout } from "@/types";
 
 export function LayoutSelector({ layouts, selectedId, onSelect }: { layouts: PublicLayout[]; selectedId?: string; onSelect: (layout: PublicLayout) => void }) {
@@ -16,13 +17,7 @@ export function LayoutSelector({ layouts, selectedId, onSelect }: { layouts: Pub
               selectedId === layout.id ? "border-gold ring-2 ring-gold/30" : "border-black/10"
             }`}
           >
-            <div className="mb-3 grid h-32 gap-1 rounded-md bg-linen p-2 sm:mb-4 sm:h-40" style={{ gridTemplateRows: `repeat(${Math.min(layout.photoCount, 4)}, 1fr)` }}>
-              {Array.from({ length: layout.photoCount }).map((_, index) => (
-                <div key={index} className="flex items-center justify-center rounded border border-dashed border-gold/60 bg-white/80 text-[11px] text-black/50 sm:text-xs">
-                  Foto {index + 1}
-                </div>
-              ))}
-            </div>
+            <ExactLayoutPreview layout={layout} className="mb-3 sm:mb-4" />
             <div className="break-words text-sm font-semibold sm:text-base">{layout.name}</div>
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-black/60 sm:text-sm">{layout.description}</p>
             <p className="mt-3 text-xs uppercase tracking-wide text-gold">{layout.photoCount} pose</p>
